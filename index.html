@@ -1,153 +1,624 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Smart Watering</title>
 
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
-    <div class="container">
+<div class="app">
 
-        <!-- HEADER -->
-        <header>
+
+    <!-- ========================================
+         HEADER
+    ========================================= -->
+
+    <header class="header">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                🌱
+            </div>
+
             <div>
-                <h1>🌱 Smart Watering</h1>
-                <p>Sistem Penyiraman Tanaman</p>
-            </div>
 
-            <div class="connection">
-                <span class="dot"></span>
-                ESP32 Terhubung
-            </div>
-        </header>
+                <h1>
+                    Smart Watering
+                </h1>
 
-
-        <!-- DASHBOARD -->
-        <main>
-
-            <!-- KELEMBAPAN TANAH -->
-            <section class="card moisture-card">
-
-                <h2>Kelembapan Tanah</h2>
-
-                <div class="moisture-value">
-                    <span id="moisture">68</span>%
-                </div>
-
-                <div class="progress">
-                    <div id="progressBar"></div>
-                </div>
-
-                <p id="condition" class="condition good">
-                    🟢 Tanah Cukup Lembap
+                <p>
+                    Monitoring & Kontrol Penyiraman Tanaman
                 </p>
 
-            </section>
+            </div>
+
+        </div>
 
 
-            <!-- MODE -->
-            <section class="card">
+        <!-- STATUS ESP32 -->
 
-                <h2>Mode Sistem</h2>
+        <div class="connection">
 
-                <div class="mode-container">
+            <span class="connection-dot"></span>
 
-                    <button
-                        id="autoButton"
-                        class="mode-button active"
-                        onclick="setMode('auto')">
-                        🤖 Otomatis
-                    </button>
+            <div>
 
-                    <button
-                        id="manualButton"
-                        class="mode-button"
-                        onclick="setMode('manual')">
-                        👆 Manual
-                    </button>
+                <strong>
+                    ESP32
+                </strong>
+
+                <small>
+                    Terhubung
+                </small>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ========================================
+         MAIN
+    ========================================= -->
+
+    <main>
+
+
+        <!-- ====================================
+             DASHBOARD UTAMA
+        ===================================== -->
+
+        <section class="dashboard-grid">
+
+
+            <!-- =================================
+                 KELEMBAPAN TANAH
+            ================================== -->
+
+            <div class="card moisture-card">
+
+
+                <!-- HEADER CARD -->
+
+                <div class="card-header">
+
+                    <div>
+
+                        <span class="card-label">
+                            SENSOR TANAH
+                        </span>
+
+                        <h2>
+                            Kelembapan Tanah
+                        </h2>
+
+                    </div>
+
+
+                    <div class="sensor-icon">
+                        💧
+                    </div>
 
                 </div>
 
-                <p class="current-mode">
-                    Mode saat ini:
-                    <strong id="modeText">OTOMATIS</strong>
-                </p>
-
-            </section>
 
 
-            <!-- POMPA -->
-            <section class="card">
+                <!-- ISI KELEMBAPAN -->
 
-                <h2>Status Pompa</h2>
+                <div class="moisture-content">
 
-                <div id="pumpStatus" class="pump-status off">
-                    🔴 POMPA MATI
+
+                    <!-- GAUGE -->
+
+                    <div
+                        class="moisture-gauge"
+                        id="moistureGauge"
+                    >
+
+                        <div class="gauge-inner">
+
+                            <strong>
+
+                                <span id="moisture">
+                                    68
+                                </span>%
+
+                            </strong>
+
+                            <small>
+                                Kelembapan
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- INFORMASI KONDISI -->
+
+                    <div class="moisture-info">
+
+                        <div
+                            id="condition"
+                            class="condition good"
+                        >
+
+                            <span>
+                                ●
+                            </span>
+
+                            Tanah Cukup Lembap
+
+                        </div>
+
+
+                        <p>
+                            Nilai kelembapan tanah
+                            dibaca oleh sensor secara
+                            berkala.
+                        </p>
+
+                    </div>
+
                 </div>
+
+            </div>
+
+
+
+            <!-- =================================
+                 STATUS POMPA
+            ================================== -->
+
+            <div class="card pump-card">
+
+
+                <!-- HEADER -->
+
+                <div class="card-header">
+
+                    <div>
+
+                        <span class="card-label">
+                            AKTUATOR
+                        </span>
+
+                        <h2>
+                            Status Pompa
+                        </h2>
+
+                    </div>
+
+
+                    <div class="pump-icon">
+                        💦
+                    </div>
+
+                </div>
+
+
+
+                <!-- STATUS POMPA -->
+
+                <div
+                    id="pumpStatus"
+                    class="pump-status off"
+                >
+
+                    <div class="pump-status-icon">
+                        🔴
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Pompa Mati
+                        </strong>
+
+                        <span>
+                            Tidak sedang menyiram
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- TOMBOL POMPA -->
 
                 <div class="pump-buttons">
 
+
                     <button
-                        class="button on"
-                        onclick="pumpControl('on')">
+                        class="button button-on"
+                        onclick="pumpControl('on')"
+                    >
+
                         💧 Nyalakan
+
                     </button>
+
 
                     <button
-                        class="button off"
-                        onclick="pumpControl('off')">
+                        class="button button-off"
+                        onclick="pumpControl('off')"
+                    >
+
                         ⛔ Matikan
+
                     </button>
 
                 </div>
 
-            </section>
+            </div>
+
+        </section>
 
 
-            <!-- STATUS SISTEM -->
-            <section class="card">
 
-                <h2>Status Sistem</h2>
+        <!-- ====================================
+             MODE PENYIRAMAN
+        ===================================== -->
 
-                <div class="status-row">
-                    <span>ESP32</span>
-                    <span class="status-online">
-                        🟢 Terhubung
+        <section class="card mode-card">
+
+
+            <!-- JUDUL -->
+
+            <div class="section-title">
+
+                <div>
+
+                    <span class="card-label">
+                        PENGATURAN SISTEM
                     </span>
+
+                    <h2>
+                        Mode Penyiraman
+                    </h2>
+
+                    <p>
+                        Pilih bagaimana pompa dikendalikan.
+                    </p>
+
                 </div>
 
-                <div class="status-row">
-                    <span>Sensor Tanah</span>
-                    <span class="status-online">
-                        🟢 Aktif
-                    </span>
+
+                <!-- MODE AKTIF -->
+
+                <div class="mode-indicator">
+
+                    Mode:
+
+                    <strong id="modeText">
+                        OTOMATIS
+                    </strong>
+
                 </div>
 
-                <div class="status-row">
-                    <span>Pompa</span>
-                    <span id="systemPumpStatus">
-                        🔴 Mati
+            </div>
+
+
+
+            <!-- PILIHAN MODE -->
+
+            <div class="mode-grid">
+
+
+                <!-- ==========================
+                     MODE OTOMATIS
+                =========================== -->
+
+                <button
+                    id="autoButton"
+                    class="mode-option active"
+                    onclick="setMode('auto')"
+                >
+
+                    <div class="mode-option-icon">
+                        🤖
+                    </div>
+
+
+                    <div class="mode-option-text">
+
+                        <strong>
+                            Otomatis
+                        </strong>
+
+                        <span>
+                            Pompa dikendalikan
+                            berdasarkan kelembapan.
+                        </span>
+
+                    </div>
+
+
+                    <div class="mode-check">
+                        ✓
+                    </div>
+
+                </button>
+
+
+
+                <!-- ==========================
+                     MODE MANUAL
+                =========================== -->
+
+                <button
+                    id="manualButton"
+                    class="mode-option"
+                    onclick="setMode('manual')"
+                >
+
+                    <div class="mode-option-icon">
+                        👆
+                    </div>
+
+
+                    <div class="mode-option-text">
+
+                        <strong>
+                            Manual
+                        </strong>
+
+                        <span>
+                            Pompa dikendalikan
+                            menggunakan tombol.
+                        </span>
+
+                    </div>
+
+
+                    <div class="mode-check">
+                        ✓
+                    </div>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- PENJELASAN MODE -->
+
+            <div
+                id="modeDescription"
+                class="mode-description"
+            >
+
+                🤖 Sistem akan mengatur pompa
+                berdasarkan kondisi kelembapan tanah.
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ====================================
+             STATUS SISTEM
+        ===================================== -->
+
+        <section class="card">
+
+
+            <!-- JUDUL -->
+
+            <div class="section-title">
+
+                <div>
+
+                    <span class="card-label">
+                        MONITORING
                     </span>
+
+                    <h2>
+                        Status Sistem
+                    </h2>
+
                 </div>
 
-            </section>
-
-        </main>
+            </div>
 
 
-        <footer>
-            Smart Watering • ESP32 Web Monitoring
-        </footer>
 
-    </div>
+            <!-- STATUS GRID -->
+
+            <div class="system-status-grid">
 
 
-    <script src="script.js"></script>
+                <!-- ESP32 -->
+
+                <div class="system-item">
+
+                    <div class="system-icon">
+                        📡
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            ESP32
+                        </span>
+
+                        <strong class="online">
+                            ● Terhubung
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- SENSOR -->
+
+                <div class="system-item">
+
+                    <div class="system-icon">
+                        🌱
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Sensor Tanah
+                        </span>
+
+                        <strong class="online">
+                            ● Aktif
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- WIFI -->
+
+                <div class="system-item">
+
+                    <div class="system-icon">
+                        📶
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Wi-Fi
+                        </span>
+
+                        <strong class="online">
+                            ● Terhubung
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- POMPA -->
+
+                <div class="system-item">
+
+                    <div class="system-icon">
+                        💦
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Pompa
+                        </span>
+
+                        <strong
+                            id="systemPumpStatus"
+                            class="offline"
+                        >
+                            ● Mati
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ====================================
+             INFORMASI SIMULASI
+        ===================================== -->
+
+        <div class="demo-info">
+
+
+            <span>
+                ℹ️
+            </span>
+
+
+            <div>
+
+                <strong>
+                    Mode Simulasi
+                </strong>
+
+
+                <p>
+
+                    Data kelembapan saat ini masih
+                    menggunakan simulasi untuk pengembangan
+                    antarmuka. Nantinya data akan berasal
+                    langsung dari sensor ESP32.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- ========================================
+         FOOTER
+    ========================================= -->
+
+    <footer>
+
+        <span>
+            Smart Watering
+        </span>
+
+        <span>
+            ESP32 Web Monitoring
+        </span>
+
+    </footer>
+
+
+</div>
+
+
+
+<!-- ========================================
+     JAVASCRIPT
+========================================= -->
+
+<script src="script.js"></script>
 
 </body>
+
 </html>
