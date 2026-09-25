@@ -1,28 +1,60 @@
+// ========================================
+// SMART WATERING
+// SIMULASI SENSOR KELEMBAPAN
+// ========================================
+
+
+// ========================================
+// DATA SISTEM
+// ========================================
+
 let moisture = 68;
+
 let currentMode = "auto";
+
 let pumpStatus = false;
 
 
-// ================================
+// ========================================
 // UPDATE KELEMBAPAN
-// ================================
+// ========================================
 
 function updateMoisture() {
 
-    document.getElementById("moisture").innerText = moisture;
+    const moistureText =
+        document.getElementById("moisture");
 
-    document.getElementById("progressBar").style.width =
-        moisture + "%";
-
+    const gauge =
+        document.getElementById("moistureGauge");
 
     const condition =
         document.getElementById("condition");
 
 
+    // Tampilkan nilai kelembapan
+
+    moistureText.innerText = moisture;
+
+
+    // ====================================
+    // UPDATE GAUGE
+    // ====================================
+
+    gauge.style.background =
+        `conic-gradient(
+            #4a9de2 ${moisture}%,
+            #e4edf5 ${moisture}%
+        )`;
+
+
+    // ====================================
+    // KONDISI TANAH
+    // ====================================
+
     if (moisture < 20) {
 
         condition.innerHTML =
-            "🔴 Tanah Sangat Kering";
+            "<span>●</span> Tanah Sangat Kering";
 
         condition.className =
             "condition danger";
@@ -32,17 +64,27 @@ function updateMoisture() {
     else if (moisture < 40) {
 
         condition.innerHTML =
-            "🟡 Tanah Kering";
+            "<span>●</span> Tanah Kering";
 
         condition.className =
             "condition warning";
 
     }
 
+    else if (moisture < 80) {
+
+        condition.innerHTML =
+            "<span>●</span> Tanah Cukup Lembap";
+
+        condition.className =
+            "condition good";
+
+    }
+
     else {
 
         condition.innerHTML =
-            "🟢 Tanah Cukup Lembap";
+            "<span>●</span> Tanah Sangat Lembap";
 
         condition.className =
             "condition good";
@@ -50,13 +92,15 @@ function updateMoisture() {
 }
 
 
-// ================================
-// GANTI MODE
-// ================================
+
+// ========================================
+// MODE OTOMATIS / MANUAL
+// ========================================
 
 function setMode(mode) {
 
     currentMode = mode;
+
 
     const autoButton =
         document.getElementById("autoButton");
@@ -64,6 +108,16 @@ function setMode(mode) {
     const manualButton =
         document.getElementById("manualButton");
 
+    const modeText =
+        document.getElementById("modeText");
+
+    const description =
+        document.getElementById("modeDescription");
+
+
+    // ====================================
+    // MODE OTOMATIS
+    // ====================================
 
     if (mode === "auto") {
 
@@ -71,10 +125,22 @@ function setMode(mode) {
 
         manualButton.classList.remove("active");
 
-        document.getElementById("modeText")
-            .innerText = "OTOMATIS";
+        modeText.innerText =
+            "OTOMATIS";
+
+
+        description.innerHTML =
+            "🤖 Sistem akan mengatur pompa berdasarkan kondisi kelembapan tanah.";
+
+
+        automaticPumpControl();
 
     }
+
+
+    // ====================================
+    // MODE MANUAL
+    // ====================================
 
     else {
 
@@ -82,25 +148,30 @@ function setMode(mode) {
 
         autoButton.classList.remove("active");
 
-        document.getElementById("modeText")
-            .innerText = "MANUAL";
+        modeText.innerText =
+            "MANUAL";
+
+
+        description.innerHTML =
+            "👆 Gunakan tombol pompa untuk mengontrol penyiraman secara manual.";
     }
 }
 
 
-// ================================
-// KONTROL POMPA
-// ================================
+
+// ========================================
+// KONTROL POMPA MANUAL
+// ========================================
 
 function pumpControl(status) {
 
-    // Pompa manual hanya boleh
-    // dikontrol pada mode MANUAL
+    // Pompa manual hanya bisa
+    // dikontrol ketika mode MANUAL
 
     if (currentMode !== "manual") {
 
         alert(
-            "Pompa manual hanya dapat dikontrol pada mode MANUAL."
+            "Pilih mode MANUAL terlebih dahulu untuk mengontrol pompa."
         );
 
         return;
@@ -113,10 +184,9 @@ function pumpControl(status) {
 
     }
 
-    else {
+    else if (status === "off") {
 
         pumpStatus = false;
-
     }
 
 
@@ -124,92 +194,204 @@ function pumpControl(status) {
 }
 
 
-// ================================
+
+// ========================================
+// KONTROL POMPA OTOMATIS
+// ========================================
+
+function automaticPumpControl() {
+
+    // Jangan jalankan kontrol otomatis
+    // kalau sedang mode manual
+
+    if (currentMode !== "auto") {
+
+        return;
+    }
+
+
+    // Sesuai logika ESP32:
+    //
+    // < 40%  = pompa ON
+    // >= 40% = pompa OFF
+
+    if (moisture < 40) {
+
+        pumpStatus = true;
+
+    }
+
+    else {
+
+        pumpStatus = false;
+    }
+
+
+    updatePump();
+}
+
+
+
+// ========================================
 // UPDATE STATUS POMPA
-// ================================
+// ========================================
 
 function updatePump() {
 
-    const pump =
+    const pumpStatusElement =
         document.getElementById("pumpStatus");
 
     const systemPump =
         document.getElementById("systemPumpStatus");
 
 
+    // ====================================
+    // POMPA ON
+    // ====================================
+
     if (pumpStatus) {
 
-        pump.innerHTML =
-            "🟢 POMPA MENYALA";
-
-        pump.className =
+        pumpStatusElement.className =
             "pump-status on";
 
-        systemPump.innerHTML =
-            "🟢 Menyala";
 
+        pumpStatusElement.innerHTML = `
+
+            <div class="pump-status-icon">
+                🟢
+            </div>
+
+            <div>
+
+                <strong>
+                    Pompa Menyala
+                </strong>
+
+                <span>
+                    Sedang melakukan penyiraman
+                </span>
+
+            </div>
+
+        `;
+
+
+        systemPump.innerText =
+            "● Menyala";
+
+        systemPump.className =
+            "online";
     }
+
+
+    // ====================================
+    // POMPA OFF
+    // ====================================
 
     else {
 
-        pump.innerHTML =
-            "🔴 POMPA MATI";
-
-        pump.className =
+        pumpStatusElement.className =
             "pump-status off";
 
-        systemPump.innerHTML =
-            "🔴 Mati";
+
+        pumpStatusElement.innerHTML = `
+
+            <div class="pump-status-icon">
+                🔴
+            </div>
+
+            <div>
+
+                <strong>
+                    Pompa Mati
+                </strong>
+
+                <span>
+                    Tidak sedang menyiram
+                </span>
+
+            </div>
+
+        `;
+
+
+        systemPump.innerText =
+            "● Mati";
+
+        systemPump.className =
+            "offline";
     }
 }
 
 
-// ================================
+
+// ========================================
 // SIMULASI SENSOR
-// ================================
+// ========================================
 
 function simulateSensor() {
 
-    // Membuat nilai sensor
-    // antara 10 - 90%
+    /*
+       Membuat nilai kelembapan baru
+       antara 10% sampai 90%.
+
+       Contoh:
+       24%
+       37%
+       65%
+       82%
+       dst.
+    */
 
     moisture =
-        Math.floor(Math.random() * 81) + 10;
+        Math.floor(
+            Math.random() * 81
+        ) + 10;
+
+
+    console.log(
+        "Kelembapan:",
+        moisture + "%"
+    );
+
+
+    // Update tampilan
 
     updateMoisture();
 
 
-    // Jika mode OTOMATIS,
+    // Kalau AUTO,
     // pompa mengikuti kelembapan
 
     if (currentMode === "auto") {
 
-        if (moisture < 40) {
-
-            pumpStatus = true;
-
-        }
-
-        else {
-
-            pumpStatus = false;
-
-        }
-
-        updatePump();
+        automaticPumpControl();
     }
 }
 
 
-// ================================
-// JALANKAN PROGRAM
-// ================================
+
+// ========================================
+// PROGRAM DIMULAI
+// ========================================
+
+console.log(
+    "Smart Watering JavaScript aktif"
+);
+
+
+// Tampilkan nilai awal
 
 updateMoisture();
 
 updatePump();
 
 
-// Simulasi sensor setiap 3 detik
+// ========================================
+// SIMULASI SETIAP 3 DETIK
+// ========================================
 
-setInterval(simulateSensor, 3000);
+setInterval(
+    simulateSensor,
+    3000
+);

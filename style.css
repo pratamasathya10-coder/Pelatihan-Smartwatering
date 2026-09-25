@@ -821,3 +821,7 @@ footer {
         text-align: center;
     }
 }
+
+body {
+    background: white !important;
+}
