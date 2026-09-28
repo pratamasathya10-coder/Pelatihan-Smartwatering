@@ -2,7 +2,6 @@
 <html lang="id">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -12,34 +11,33 @@
 
     <title>Smart Watering</title>
 
-    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
-
 </head>
-
 
 <body>
 
 <div class="app">
 
-
-    <!-- ========================================
-         HEADER
-    ========================================= -->
-
+    <!-- HEADER -->
     <header class="header">
 
         <div class="brand">
 
-            <div class="brand-icon">
-                🌱
+            <div class="logo-group">
+
+                <div class="logo-box mikiko-box">
+                    <img src="logo mikiko.png" alt="Mikiko">
+                </div>
+
+                <div class="logo-box pmk-box">
+                    <img src="LOGO PMK.png" alt="Petani Muda Keren">
+                </div>
+
             </div>
 
-            <div>
+            <div class="brand-text">
 
-                <h1>
-                    Smart Watering
-                </h1>
+                <h1>Smart Watering</h1>
 
                 <p>
                     Monitoring & Kontrol Penyiraman Tanaman
@@ -49,23 +47,13 @@
 
         </div>
 
-
-        <!-- STATUS ESP32 -->
-
         <div class="connection">
 
             <span class="connection-dot"></span>
 
             <div>
-
-                <strong>
-                    ESP32
-                </strong>
-
-                <small>
-                    Terhubung
-                </small>
-
+                <strong>ESP32</strong>
+                <small>Simulasi</small>
             </div>
 
         </div>
@@ -73,29 +61,16 @@
     </header>
 
 
-
-    <!-- ========================================
-         MAIN
-    ========================================= -->
-
     <main>
 
-
-        <!-- ====================================
+        <!-- =========================
              DASHBOARD UTAMA
-        ===================================== -->
+        ========================== -->
 
         <section class="dashboard-grid">
 
-
-            <!-- =================================
-                 KELEMBAPAN TANAH
-            ================================== -->
-
+            <!-- KELEMBAPAN -->
             <div class="card moisture-card">
-
-
-                <!-- HEADER CARD -->
 
                 <div class="card-header">
 
@@ -111,7 +86,6 @@
 
                     </div>
 
-
                     <div class="sensor-icon">
                         💧
                     </div>
@@ -119,13 +93,7 @@
                 </div>
 
 
-
-                <!-- ISI KELEMBAPAN -->
-
                 <div class="moisture-content">
-
-
-                    <!-- GAUGE -->
 
                     <div
                         class="moisture-gauge"
@@ -135,11 +103,7 @@
                         <div class="gauge-inner">
 
                             <strong>
-
-                                <span id="moisture">
-                                    68
-                                </span>%
-
+                                <span id="moisture">68</span>%
                             </strong>
 
                             <small>
@@ -151,29 +115,19 @@
                     </div>
 
 
-
-                    <!-- INFORMASI KONDISI -->
-
                     <div class="moisture-info">
 
                         <div
                             id="condition"
                             class="condition good"
                         >
-
-                            <span>
-                                ●
-                            </span>
-
+                            <span>●</span>
                             Tanah Cukup Lembap
-
                         </div>
 
-
                         <p>
-                            Nilai kelembapan tanah
-                            dibaca oleh sensor secara
-                            berkala.
+                            Data sensor diperbarui secara
+                            berkala dalam mode simulasi.
                         </p>
 
                     </div>
@@ -183,15 +137,8 @@
             </div>
 
 
-
-            <!-- =================================
-                 STATUS POMPA
-            ================================== -->
-
+            <!-- POMPA -->
             <div class="card pump-card">
-
-
-                <!-- HEADER -->
 
                 <div class="card-header">
 
@@ -207,16 +154,12 @@
 
                     </div>
 
-
                     <div class="pump-icon">
                         💦
                     </div>
 
                 </div>
 
-
-
-                <!-- STATUS POMPA -->
 
                 <div
                     id="pumpStatus"
@@ -226,7 +169,6 @@
                     <div class="pump-status-icon">
                         🔴
                     </div>
-
 
                     <div>
 
@@ -243,29 +185,22 @@
                 </div>
 
 
-
-                <!-- TOMBOL POMPA -->
-
                 <div class="pump-buttons">
 
-
                     <button
+                        id="pumpOnButton"
                         class="button button-on"
                         onclick="pumpControl('on')"
                     >
-
                         💧 Nyalakan
-
                     </button>
 
-
                     <button
+                        id="pumpOffButton"
                         class="button button-off"
                         onclick="pumpControl('off')"
                     >
-
                         ⛔ Matikan
-
                     </button>
 
                 </div>
@@ -275,15 +210,162 @@
         </section>
 
 
+        <!-- =========================
+             GRAFIK
+        ========================== -->
 
-        <!-- ====================================
-             MODE PENYIRAMAN
-        ===================================== -->
+        <section class="card graph-card">
+
+            <div class="section-title">
+
+                <div>
+
+                    <span class="card-label">
+                        DATA SENSOR
+                    </span>
+
+                    <h2>
+                        Grafik Kelembapan
+                    </h2>
+
+                    <p>
+                        Perubahan kelembapan tanah secara real-time.
+                    </p>
+
+                </div>
+
+                <div class="live-badge">
+                    <span></span>
+                    LIVE
+                </div>
+
+            </div>
+
+
+            <div class="chart-container">
+
+                <svg
+                    id="moistureChart"
+                    viewBox="0 0 800 300"
+                    preserveAspectRatio="none"
+                >
+
+                    <line
+                        x1="50"
+                        y1="20"
+                        x2="50"
+                        y2="260"
+                        class="chart-axis"
+                    />
+
+                    <line
+                        x1="50"
+                        y1="260"
+                        x2="780"
+                        y2="260"
+                        class="chart-axis"
+                    />
+
+                    <line
+                        x1="50"
+                        y1="80"
+                        x2="780"
+                        y2="80"
+                        class="chart-grid"
+                    />
+
+                    <line
+                        x1="50"
+                        y1="140"
+                        x2="780"
+                        y2="140"
+                        class="chart-grid"
+                    />
+
+                    <line
+                        x1="50"
+                        y1="200"
+                        x2="780"
+                        y2="200"
+                        class="chart-grid"
+                    />
+
+                    <text
+                        x="15"
+                        y="27"
+                        class="chart-label"
+                    >
+                        100%
+                    </text>
+
+                    <text
+                        x="25"
+                        y="87"
+                        class="chart-label"
+                    >
+                        75%
+                    </text>
+
+                    <text
+                        x="25"
+                        y="147"
+                        class="chart-label"
+                    >
+                        50%
+                    </text>
+
+                    <text
+                        x="25"
+                        y="207"
+                        class="chart-label"
+                    >
+                        25%
+                    </text>
+
+                    <text
+                        x="32"
+                        y="267"
+                        class="chart-label"
+                    >
+                        0%
+                    </text>
+
+                    <polyline
+                        id="chartLine"
+                        points=""
+                    />
+
+                    <polyline
+                        id="chartArea"
+                        points=""
+                    />
+
+                </svg>
+
+            </div>
+
+
+            <div class="chart-info">
+
+                <span>
+                    ●
+                    Kelembapan tanah
+                </span>
+
+                <span id="chartCurrent">
+                    Saat ini: 68%
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             MODE
+        ========================== -->
 
         <section class="card mode-card">
-
-
-            <!-- JUDUL -->
 
             <div class="section-title">
 
@@ -303,9 +385,6 @@
 
                 </div>
 
-
-                <!-- MODE AKTIF -->
-
                 <div class="mode-indicator">
 
                     Mode:
@@ -319,15 +398,7 @@
             </div>
 
 
-
-            <!-- PILIHAN MODE -->
-
             <div class="mode-grid">
-
-
-                <!-- ==========================
-                     MODE OTOMATIS
-                =========================== -->
 
                 <button
                     id="autoButton"
@@ -339,7 +410,6 @@
                         🤖
                     </div>
 
-
                     <div class="mode-option-text">
 
                         <strong>
@@ -347,12 +417,11 @@
                         </strong>
 
                         <span>
-                            Pompa dikendalikan
-                            berdasarkan kelembapan.
+                            Pompa dikendalikan berdasarkan
+                            kelembapan tanah.
                         </span>
 
                     </div>
-
 
                     <div class="mode-check">
                         ✓
@@ -360,11 +429,6 @@
 
                 </button>
 
-
-
-                <!-- ==========================
-                     MODE MANUAL
-                =========================== -->
 
                 <button
                     id="manualButton"
@@ -376,7 +440,6 @@
                         👆
                     </div>
 
-
                     <div class="mode-option-text">
 
                         <strong>
@@ -384,12 +447,41 @@
                         </strong>
 
                         <span>
-                            Pompa dikendalikan
-                            menggunakan tombol.
+                            Pompa dikendalikan menggunakan
+                            tombol.
                         </span>
 
                     </div>
 
+                    <div class="mode-check">
+                        ✓
+                    </div>
+
+                </button>
+
+
+                <button
+                    id="scheduleButton"
+                    class="mode-option"
+                    onclick="setMode('schedule')"
+                >
+
+                    <div class="mode-option-icon">
+                        ⏰
+                    </div>
+
+                    <div class="mode-option-text">
+
+                        <strong>
+                            Terjadwal
+                        </strong>
+
+                        <span>
+                            Pompa mengikuti jadwal yang
+                            telah dibuat.
+                        </span>
+
+                    </div>
 
                     <div class="mode-check">
                         ✓
@@ -400,31 +492,152 @@
             </div>
 
 
-
-            <!-- PENJELASAN MODE -->
-
             <div
                 id="modeDescription"
                 class="mode-description"
             >
-
-                🤖 Sistem akan mengatur pompa
-                berdasarkan kondisi kelembapan tanah.
-
+                🤖 Sistem akan mengatur pompa berdasarkan
+                kondisi kelembapan tanah.
             </div>
 
         </section>
 
 
+        <!-- =========================
+             PENJADWALAN
+        ========================== -->
 
-        <!-- ====================================
+        <section class="card schedule-card">
+
+            <div class="section-title">
+
+                <div>
+
+                    <span class="card-label">
+                        AUTOMASI WAKTU
+                    </span>
+
+                    <h2>
+                        Penjadwalan Pompa
+                    </h2>
+
+                    <p>
+                        Atur waktu pompa menyala dan mati.
+                    </p>
+
+                </div>
+
+                <div class="schedule-icon">
+                    ⏰
+                </div>
+
+            </div>
+
+
+            <div class="schedule-form">
+
+                <div class="time-input">
+
+                    <label>
+                        Pompa ON
+                    </label>
+
+                    <input
+                        type="time"
+                        id="startTime"
+                        value="07:00"
+                    >
+
+                </div>
+
+
+                <div class="time-arrow">
+                    →
+                </div>
+
+
+                <div class="time-input">
+
+                    <label>
+                        Pompa OFF
+                    </label>
+
+                    <input
+                        type="time"
+                        id="endTime"
+                        value="07:10"
+                    >
+
+                </div>
+
+
+                <button
+                    class="add-schedule-button"
+                    onclick="addSchedule()"
+                >
+                    + Tambah Jadwal
+                </button>
+
+            </div>
+
+
+            <div
+                id="scheduleList"
+                class="schedule-list"
+            >
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             LOG POMPA
+        ========================== -->
+
+        <section class="card log-card">
+
+            <div class="section-title">
+
+                <div>
+
+                    <span class="card-label">
+                        RIWAYAT AKTIVITAS
+                    </span>
+
+                    <h2>
+                        Log Pompa
+                    </h2>
+
+                    <p>
+                        Catatan waktu pompa menyala dan mati.
+                    </p>
+
+                </div>
+
+                <button
+                    class="clear-log"
+                    onclick="clearLogs()"
+                >
+                    Hapus Log
+                </button>
+
+            </div>
+
+
+            <div
+                id="pumpLog"
+                class="pump-log"
+            >
+            </div>
+
+        </section>
+
+
+        <!-- =========================
              STATUS SISTEM
-        ===================================== -->
+        ========================== -->
 
         <section class="card">
-
-
-            <!-- JUDUL -->
 
             <div class="section-title">
 
@@ -443,20 +656,13 @@
             </div>
 
 
-
-            <!-- STATUS GRID -->
-
             <div class="system-status-grid">
-
-
-                <!-- ESP32 -->
 
                 <div class="system-item">
 
                     <div class="system-icon">
                         📡
                     </div>
-
 
                     <div>
 
@@ -465,7 +671,7 @@
                         </span>
 
                         <strong class="online">
-                            ● Terhubung
+                            ● Simulasi
                         </strong>
 
                     </div>
@@ -473,15 +679,11 @@
                 </div>
 
 
-
-                <!-- SENSOR -->
-
                 <div class="system-item">
 
                     <div class="system-icon">
                         🌱
                     </div>
-
 
                     <div>
 
@@ -498,15 +700,11 @@
                 </div>
 
 
-
-                <!-- WIFI -->
-
                 <div class="system-item">
 
                     <div class="system-icon">
                         📶
                     </div>
-
 
                     <div>
 
@@ -515,7 +713,7 @@
                         </span>
 
                         <strong class="online">
-                            ● Terhubung
+                            ● Simulasi
                         </strong>
 
                     </div>
@@ -523,15 +721,11 @@
                 </div>
 
 
-
-                <!-- POMPA -->
-
                 <div class="system-item">
 
                     <div class="system-icon">
                         💦
                     </div>
-
 
                     <div>
 
@@ -555,18 +749,12 @@
         </section>
 
 
-
-        <!-- ====================================
-             INFORMASI SIMULASI
-        ===================================== -->
-
+        <!-- INFO -->
         <div class="demo-info">
-
 
             <span>
                 ℹ️
             </span>
-
 
             <div>
 
@@ -574,14 +762,10 @@
                     Mode Simulasi
                 </strong>
 
-
                 <p>
-
-                    Data kelembapan saat ini masih
-                    menggunakan simulasi untuk pengembangan
-                    antarmuka. Nantinya data akan berasal
-                    langsung dari sensor ESP32.
-
+                    Sistem saat ini belum terhubung ke ESP32.
+                    Data sensor, pompa, jadwal dan log
+                    masih dijalankan melalui simulasi browser.
                 </p>
 
             </div>
@@ -590,11 +774,6 @@
 
     </main>
 
-
-
-    <!-- ========================================
-         FOOTER
-    ========================================= -->
 
     <footer>
 
@@ -608,14 +787,8 @@
 
     </footer>
 
-
 </div>
 
-
-
-<!-- ========================================
-     JAVASCRIPT
-========================================= -->
 
 <script src="script.js"></script>
 
