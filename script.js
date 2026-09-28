@@ -1,784 +1,1343 @@
-// ========================================
-// SMART WATERING
-// FRONTEND SIMULATION
-// ========================================
+/* =========================================================
+   SMART WATERING
+   SCRIPT.JS
+   ========================================================= */
 
 
-// ========================================
-// DATA SISTEM
-// ========================================
+/* =========================================================
+   GLOBAL STATE
+   ========================================================= */
 
-let moisture = 68;
+let currentLanguage =
+    localStorage.getItem("smartWateringLanguage") || "id";
+
+let currentTheme =
+    localStorage.getItem("smartWateringTheme") || "light";
 
 let currentMode = "auto";
 
 let pumpStatus = false;
 
-let previousPumpStatus = false;
-
-
-// ========================================
-// DATA GRAFIK
-// ========================================
+let moisture = 68;
 
 let moistureHistory = [];
 
-
-// Buat data awal
-for (let i = 0; i < 20; i++) {
-
-    moistureHistory.push(
-        55 + Math.floor(Math.random() * 25)
-    );
-}
-
-
-// ========================================
-// DATA JADWAL
-// ========================================
-
 let schedules =
     JSON.parse(
-        localStorage.getItem("smartWateringSchedules")
-    ) || [
+        localStorage.getItem("smartWateringSchedules") || "[]"
+    );
 
-        {
-            start: "07:00",
-            end: "07:10",
-            active: true
-        },
-
-        {
-            start: "17:00",
-            end: "17:10",
-            active: true
-        }
-
-    ];
-
-
-// ========================================
-// DATA LOG
-// ========================================
-
-let pumpLogs =
+let logs =
     JSON.parse(
-        localStorage.getItem("smartWateringLogs")
-    ) || [];
-
-
-// ========================================
-// SIMPAN DATA
-// ========================================
-
-function saveSchedules() {
-
-    localStorage.setItem(
-        "smartWateringSchedules",
-        JSON.stringify(schedules)
+        localStorage.getItem("smartWateringLogs") || "[]"
     );
+
+
+/* =========================================================
+   TRANSLATION
+   ========================================================= */
+
+const translations = {
+
+    id: {
+
+        title:
+            "Smart Watering",
+
+        subtitle:
+            "Monitoring & Kontrol Penyiraman Tanaman",
+
+        simulation:
+            "Simulasi",
+
+        soilSensor:
+            "SENSOR TANAH",
+
+        soilMoisture:
+            "Kelembapan Tanah",
+
+        moisture:
+            "Kelembapan",
+
+        soilGood:
+            "Tanah Cukup Lembap",
+
+        soilDry:
+            "Tanah Kering",
+
+        soilVeryDry:
+            "Tanah Sangat Kering",
+
+        sensorUpdate:
+            "Data sensor diperbarui secara berkala dalam mode simulasi.",
+
+        actuator:
+            "AKTUATOR",
+
+        pumpStatus:
+            "Status Pompa",
+
+        pumpOff:
+            "Pompa Mati",
+
+        pumpOn:
+            "Pompa Menyala",
+
+        notWatering:
+            "Tidak sedang menyiram",
+
+        watering:
+            "Sedang menyiram tanaman",
+
+        turnOn:
+            "Nyalakan",
+
+        turnOff:
+            "Matikan",
+
+        sensorData:
+            "DATA SENSOR",
+
+        moistureChart:
+            "Grafik Kelembapan",
+
+        chartDescription:
+            "Perubahan kelembapan tanah secara real-time.",
+
+        soilMoistureLegend:
+            "● Kelembapan tanah",
+
+        current:
+            "Saat ini",
+
+        systemSettings:
+            "PENGATURAN SISTEM",
+
+        wateringMode:
+            "Mode Penyiraman",
+
+        modeDescription:
+            "Pilih bagaimana pompa dikendalikan.",
+
+        mode:
+            "Mode:",
+
+        automatic:
+            "Otomatis",
+
+        automaticDesc:
+            "Pompa dikendalikan berdasarkan kelembapan tanah.",
+
+        manual:
+            "Manual",
+
+        manualDesc:
+            "Pompa dikendalikan menggunakan tombol.",
+
+        scheduled:
+            "Terjadwal",
+
+        scheduledDesc:
+            "Pompa mengikuti jadwal yang telah dibuat.",
+
+        automaticDescription:
+            "🤖 Sistem akan mengatur pompa berdasarkan kondisi kelembapan tanah.",
+
+        manualDescription:
+            "👆 Pompa dapat dikendalikan secara langsung menggunakan tombol.",
+
+        scheduledDescription:
+            "⏰ Pompa akan mengikuti jadwal penyiraman yang telah dibuat.",
+
+        timeAutomation:
+            "AUTOMASI WAKTU",
+
+        pumpScheduling:
+            "Penjadwalan Pompa",
+
+        scheduleDescription:
+            "Atur waktu pompa menyala dan mati.",
+
+        pumpOn:
+            "Pompa ON",
+
+        pumpOff:
+            "Pompa OFF",
+
+        addSchedule:
+            "Tambah Jadwal",
+
+        activityHistory:
+            "RIWAYAT AKTIVITAS",
+
+        pumpLog:
+            "Log Pompa",
+
+        logDescription:
+            "Catatan waktu pompa menyala dan mati.",
+
+        clearLog:
+            "Hapus Log",
+
+        monitoring:
+            "MONITORING",
+
+        systemStatus:
+            "Status Sistem",
+
+        active:
+            "Aktif",
+
+        pump:
+            "Pompa",
+
+        off:
+            "Mati",
+
+        on:
+            "Menyala",
+
+        simulationMode:
+            "Mode Simulasi",
+
+        simulationInfo:
+            "Sistem saat ini belum terhubung ke ESP32. Data sensor, pompa, jadwal dan log masih dijalankan melalui simulasi browser.",
+
+        scheduleAdded:
+            "Jadwal berhasil ditambahkan.",
+
+        scheduleDeleted:
+            "Jadwal dihapus.",
+
+        logsCleared:
+            "Semua log pompa telah dihapus.",
+
+        confirmClear:
+            "Hapus semua log pompa?",
+
+        noSchedule:
+            "Belum ada jadwal.",
+
+        noLog:
+            "Belum ada aktivitas pompa.",
+
+        schedule:
+            "Jadwal",
+
+        pumpTurnedOn:
+            "Pompa dinyalakan",
+
+        pumpTurnedOff:
+            "Pompa dimatikan",
+
+        dark:
+            "Dark",
+
+        light:
+            "Light"
+
+    },
+
+
+    en: {
+
+        title:
+            "Smart Watering",
+
+        subtitle:
+            "Plant Watering Monitoring & Control",
+
+        simulation:
+            "Simulation",
+
+        soilSensor:
+            "SOIL SENSOR",
+
+        soilMoisture:
+            "Soil Moisture",
+
+        moisture:
+            "Moisture",
+
+        soilGood:
+            "Soil Moisture is Good",
+
+        soilDry:
+            "Soil is Dry",
+
+        soilVeryDry:
+            "Soil is Very Dry",
+
+        sensorUpdate:
+            "Sensor data is periodically updated in simulation mode.",
+
+        actuator:
+            "ACTUATOR",
+
+        pumpStatus:
+            "Pump Status",
+
+        pumpOff:
+            "Pump OFF",
+
+        pumpOn:
+            "Pump ON",
+
+        notWatering:
+            "Not watering",
+
+        watering:
+            "Currently watering",
+
+        turnOn:
+            "Turn ON",
+
+        turnOff:
+            "Turn OFF",
+
+        sensorData:
+            "SENSOR DATA",
+
+        moistureChart:
+            "Moisture Chart",
+
+        chartDescription:
+            "Real-time soil moisture changes.",
+
+        soilMoistureLegend:
+            "● Soil moisture",
+
+        current:
+            "Current",
+
+        systemSettings:
+            "SYSTEM SETTINGS",
+
+        wateringMode:
+            "Watering Mode",
+
+        modeDescription:
+            "Choose how the pump is controlled.",
+
+        mode:
+            "Mode:",
+
+        automatic:
+            "Automatic",
+
+        automaticDesc:
+            "Pump is controlled based on soil moisture.",
+
+        manual:
+            "Manual",
+
+        manualDesc:
+            "Pump is controlled using buttons.",
+
+        scheduled:
+            "Scheduled",
+
+        scheduledDesc:
+            "Pump follows the configured schedule.",
+
+        automaticDescription:
+            "🤖 The system controls the pump based on soil moisture.",
+
+        manualDescription:
+            "👆 The pump can be controlled directly using the buttons.",
+
+        scheduledDescription:
+            "⏰ The pump follows the configured watering schedule.",
+
+        timeAutomation:
+            "TIME AUTOMATION",
+
+        pumpScheduling:
+            "Pump Scheduling",
+
+        scheduleDescription:
+            "Set the time when the pump turns on and off.",
+
+        pumpOn:
+            "Pump ON",
+
+        pumpOff:
+            "Pump OFF",
+
+        addSchedule:
+            "Add Schedule",
+
+        activityHistory:
+            "ACTIVITY HISTORY",
+
+        pumpLog:
+            "Pump Log",
+
+        logDescription:
+            "Record of pump ON and OFF activity.",
+
+        clearLog:
+            "Clear Log",
+
+        monitoring:
+            "MONITORING",
+
+        systemStatus:
+            "System Status",
+
+        active:
+            "Active",
+
+        pump:
+            "Pump",
+
+        off:
+            "OFF",
+
+        on:
+            "ON",
+
+        simulationMode:
+            "Simulation Mode",
+
+        simulationInfo:
+            "The system is currently not connected to an ESP32. Sensor, pump, schedule and log data are running through browser simulation.",
+
+        scheduleAdded:
+            "Schedule successfully added.",
+
+        scheduleDeleted:
+            "Schedule deleted.",
+
+        logsCleared:
+            "All pump logs have been deleted.",
+
+        confirmClear:
+            "Delete all pump logs?",
+
+        noSchedule:
+            "No schedules yet.",
+
+        noLog:
+            "No pump activity yet.",
+
+        schedule:
+            "Schedule",
+
+        pumpTurnedOn:
+            "Pump turned ON",
+
+        pumpTurnedOff:
+            "Pump turned OFF",
+
+        dark:
+            "Dark",
+
+        light:
+            "Light"
+
+    }
+
+};
+
+
+/* =========================================================
+   TRANSLATION HELPER
+   ========================================================= */
+
+function t(key) {
+
+    return (
+        translations[currentLanguage][key] ||
+        key
+    );
+
 }
 
 
-function saveLogs() {
+/* =========================================================
+   LANGUAGE
+   ========================================================= */
+
+function setLanguage(language) {
+
+    if (
+        language !== "id" &&
+        language !== "en"
+    ) {
+        return;
+    }
+
+    currentLanguage = language;
 
     localStorage.setItem(
-        "smartWateringLogs",
-        JSON.stringify(pumpLogs)
+        "smartWateringLanguage",
+        currentLanguage
     );
+
+    applyTranslations();
+
 }
 
 
-// ========================================
-// KELEMBAPAN
-// ========================================
+/* =========================================================
+   APPLY TRANSLATIONS
+   ========================================================= */
 
-function updateMoisture() {
+function applyTranslations() {
 
-    const moistureText =
+    document
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
+
+            const key =
+                element.getAttribute("data-i18n");
+
+            element.textContent =
+                t(key);
+
+        });
+
+
+    const langID =
+        document.getElementById("langID");
+
+    const langEN =
+        document.getElementById("langEN");
+
+
+    if (langID) {
+
+        langID.classList.toggle(
+            "active",
+            currentLanguage === "id"
+        );
+
+    }
+
+
+    if (langEN) {
+
+        langEN.classList.toggle(
+            "active",
+            currentLanguage === "en"
+        );
+
+    }
+
+
+    updateThemeButton();
+
+    updateMoistureUI();
+
+    updatePumpUI();
+
+    updateModeUI();
+
+    updateChartText();
+
+    renderSchedules();
+
+    renderLogs();
+
+}
+
+
+/* =========================================================
+   DARK / LIGHT MODE
+   ========================================================= */
+
+function toggleTheme() {
+
+    currentTheme =
+        currentTheme === "light"
+            ? "dark"
+            : "light";
+
+
+    localStorage.setItem(
+        "smartWateringTheme",
+        currentTheme
+    );
+
+
+    applyTheme();
+
+}
+
+
+function applyTheme() {
+
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            currentTheme === "dark"
+                ? "dark"
+                : "light"
+        );
+
+
+    updateThemeButton();
+
+}
+
+
+function updateThemeButton() {
+
+    const button =
+        document.getElementById("themeButton");
+
+
+    if (!button) {
+        return;
+    }
+
+
+    if (currentTheme === "dark") {
+
+        button.textContent = "☀️";
+
+        button.title =
+            t("light");
+
+    } else {
+
+        button.textContent = "🌙";
+
+        button.title =
+            t("dark");
+
+    }
+
+}
+
+
+/* =========================================================
+   MOISTURE SIMULATION
+   ========================================================= */
+
+function simulateMoisture() {
+
+    let change =
+        Math.floor(
+            Math.random() * 9
+        ) - 4;
+
+
+    moisture += change;
+
+
+    /*
+       Jika pompa menyala,
+       kelembapan cenderung naik.
+    */
+
+    if (pumpStatus) {
+
+        moisture +=
+            Math.floor(
+                Math.random() * 4
+            ) + 1;
+
+    } else {
+
+        /*
+           Jika pompa mati,
+           kelembapan perlahan turun.
+        */
+
+        moisture -=
+            Math.floor(
+                Math.random() * 2
+            );
+
+    }
+
+
+    moisture =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                moisture
+            )
+        );
+
+
+    /*
+       Simpan histori grafik
+    */
+
+    moistureHistory.push(moisture);
+
+
+    if (
+        moistureHistory.length > 30
+    ) {
+
+        moistureHistory.shift();
+
+    }
+
+
+    updateMoistureUI();
+
+    updateChart();
+
+    automaticControl();
+
+}
+
+
+/* =========================================================
+   MOISTURE UI
+   ========================================================= */
+
+function updateMoistureUI() {
+
+    const moistureElement =
         document.getElementById("moisture");
 
+
+    if (moistureElement) {
+
+        moistureElement.textContent =
+            Math.round(moisture);
+
+    }
+
+
     const gauge =
-        document.getElementById("moistureGauge");
+        document.getElementById(
+            "moistureGauge"
+        );
+
+
+    if (gauge) {
+
+        gauge.style.background =
+            `conic-gradient(
+                ${getMoistureColor()} ${moisture}%,
+                var(--primary-light) 0
+            )`;
+
+    }
+
 
     const condition =
-        document.getElementById("condition");
-
-    moistureText.innerText =
-        moisture;
-
-
-    gauge.style.background =
-        `conic-gradient(
-            #4a9de2 ${moisture}%,
-            #e4edf5 ${moisture}%
-        )`;
+        document.getElementById(
+            "condition"
+        );
 
 
-    // Kondisi tanah
+    if (!condition) {
+        return;
+    }
+
+
+    let text;
+    let className;
+
 
     if (moisture < 20) {
 
-        condition.innerHTML =
-            "<span>●</span> Tanah Sangat Kering";
+        text = t("soilVeryDry");
 
-        condition.className =
+        className =
             "condition danger";
 
-    }
+    } else if (moisture < 40) {
 
-    else if (moisture < 40) {
+        text = t("soilDry");
 
-        condition.innerHTML =
-            "<span>●</span> Tanah Kering";
-
-        condition.className =
+        className =
             "condition warning";
 
-    }
+    } else {
 
-    else if (moisture < 80) {
+        text = t("soilGood");
 
-        condition.innerHTML =
-            "<span>●</span> Tanah Cukup Lembap";
-
-        condition.className =
+        className =
             "condition good";
 
     }
 
-    else {
 
-        condition.innerHTML =
-            "<span>●</span> Tanah Sangat Lembap";
-
-        condition.className =
-            "condition good";
-    }
+    condition.className =
+        className;
 
 
-    document.getElementById("chartCurrent")
-        .innerText =
-        "Saat ini: " + moisture + "%";
+    condition.innerHTML =
+        `<span>●</span>
+         <span>${text}</span>`;
+
+
+    updateChartText();
+
 }
 
 
-// ========================================
-// GRAFIK
-// ========================================
+/* =========================================================
+   MOISTURE COLOR
+   ========================================================= */
 
-function updateChart() {
+function getMoistureColor() {
 
-    const chartLine =
-        document.getElementById("chartLine");
+    if (moisture < 20) {
 
-    const chartArea =
-        document.getElementById("chartArea");
+        return "var(--danger)";
 
-
-    const chartWidth = 730;
-
-    const chartHeight = 240;
-
-    const startX = 50;
-
-    const startY = 20;
-
-
-    let points = "";
-
-
-    moistureHistory.forEach(
-        (value, index) => {
-
-            const x =
-                startX +
-                (
-                    index /
-                    (moistureHistory.length - 1)
-                ) *
-                chartWidth;
-
-
-            const y =
-                startY +
-                chartHeight -
-                (
-                    value / 100
-                ) *
-                chartHeight;
-
-
-            points +=
-                `${x},${y} `;
-        }
-    );
-
-
-    chartLine.setAttribute(
-        "points",
-        points
-    );
-
-
-    // Area grafik
-
-    const firstPoint =
-        points.trim().split(" ")[0];
-
-    const lastPoint =
-        points.trim().split(" ").slice(-1)[0];
-
-
-    const areaPoints =
-        `${firstPoint} ${points}
-         780,260 50,260`;
-
-
-    chartArea.setAttribute(
-        "points",
-        areaPoints
-    );
-}
-
-
-// ========================================
-// MODE
-// ========================================
-
-function setMode(mode) {
-
-    currentMode = mode;
-
-
-    const autoButton =
-        document.getElementById("autoButton");
-
-    const manualButton =
-        document.getElementById("manualButton");
-
-    const scheduleButton =
-        document.getElementById("scheduleButton");
-
-    const modeText =
-        document.getElementById("modeText");
-
-    const description =
-        document.getElementById("modeDescription");
-
-
-    autoButton.classList.remove("active");
-
-    manualButton.classList.remove("active");
-
-    scheduleButton.classList.remove("active");
-
-
-    if (mode === "auto") {
-
-        autoButton.classList.add("active");
-
-        modeText.innerText =
-            "OTOMATIS";
-
-        description.innerHTML =
-            "🤖 Sistem mengatur pompa berdasarkan kondisi kelembapan tanah.";
-
-        automaticPumpControl();
-    }
-
-
-    else if (mode === "manual") {
-
-        manualButton.classList.add("active");
-
-        modeText.innerText =
-            "MANUAL";
-
-        description.innerHTML =
-            "👆 Gunakan tombol pompa untuk mengontrol penyiraman secara manual.";
-    }
-
-
-    else {
-
-        scheduleButton.classList.add("active");
-
-        modeText.innerText =
-            "TERJADWAL";
-
-        description.innerHTML =
-            "⏰ Pompa akan menyala dan mati mengikuti jadwal yang telah dibuat.";
-
-        schedulePumpControl();
-    }
-
-
-    updatePumpButtons();
-}
-
-
-// ========================================
-// MODE OTOMATIS
-// ========================================
-
-function automaticPumpControl() {
-
-    if (currentMode !== "auto") {
-
-        return;
     }
 
 
     if (moisture < 40) {
 
-        setPump(true, "AUTO");
+        return "var(--warning)";
 
     }
 
-    else {
 
-        setPump(false, "AUTO");
-    }
+    return "var(--primary)";
+
 }
 
 
-// ========================================
-// MODE TERJADWAL
-// ========================================
+/* =========================================================
+   AUTOMATIC CONTROL
+   ========================================================= */
 
-function schedulePumpControl() {
+function automaticControl() {
 
-    if (currentMode !== "schedule") {
-
+    if (currentMode !== "auto") {
         return;
     }
 
 
-    const now =
-        new Date();
+    /*
+       Jika kelembapan di bawah 40%,
+       pompa otomatis menyala.
+
+       Jika sudah >= 40%,
+       pompa mati.
+    */
+
+    if (
+        moisture < 40 &&
+        !pumpStatus
+    ) {
+
+        setPumpState(
+            true,
+            false
+        );
+
+    }
 
 
-    const currentMinutes =
-        now.getHours() * 60 +
-        now.getMinutes();
+    if (
+        moisture >= 40 &&
+        pumpStatus
+    ) {
 
+        setPumpState(
+            false,
+            false
+        );
 
-    let shouldPump = false;
+    }
 
-
-    schedules.forEach(
-        schedule => {
-
-            if (!schedule.active) {
-
-                return;
-            }
-
-
-            const start =
-                timeToMinutes(
-                    schedule.start
-                );
-
-
-            const end =
-                timeToMinutes(
-                    schedule.end
-                );
-
-
-            if (
-                currentMinutes >= start &&
-                currentMinutes < end
-            ) {
-
-                shouldPump = true;
-            }
-
-        }
-    );
-
-
-    setPump(
-        shouldPump,
-        "JADWAL"
-    );
 }
 
 
-// ========================================
-// KONVERSI JAM
-// ========================================
+/* =========================================================
+   PUMP CONTROL
+   ========================================================= */
 
-function timeToMinutes(time) {
+function pumpControl(action) {
 
-    const parts =
-        time.split(":");
+    /*
+       Mode otomatis:
+       tombol manual tidak digunakan.
+    */
 
-
-    return (
-        parseInt(parts[0]) * 60 +
-        parseInt(parts[1])
-    );
-}
-
-
-// ========================================
-// MANUAL
-// ========================================
-
-function pumpControl(status) {
-
-    if (currentMode !== "manual") {
+    if (currentMode === "auto") {
 
         alert(
-            "Pilih mode MANUAL terlebih dahulu."
+            currentLanguage === "id"
+                ? "Pompa dikendalikan otomatis berdasarkan kelembapan tanah."
+                : "The pump is automatically controlled based on soil moisture."
         );
 
         return;
+
     }
 
 
-    if (status === "on") {
+    if (action === "on") {
 
-        setPump(
+        setPumpState(
             true,
-            "MANUAL"
+            true
         );
+
     }
 
 
-    else {
+    if (action === "off") {
 
-        setPump(
+        setPumpState(
             false,
-            "MANUAL"
+            true
         );
+
     }
+
 }
 
 
-// ========================================
-// KONTROL POMPA
-// ========================================
+/* =========================================================
+   SET PUMP STATE
+   ========================================================= */
 
-function setPump(status, source) {
+function setPumpState(
+    state,
+    createLog = true
+) {
 
-    const changed =
-        pumpStatus !== status;
+    const previousState =
+        pumpStatus;
 
 
     pumpStatus =
-        status;
+        state;
 
 
-    updatePump();
+    updatePumpUI();
 
 
-    // Catat hanya jika status berubah
+    if (
+        createLog &&
+        previousState !== state
+    ) {
 
-    if (changed) {
-
-        addPumpLog(
-            status,
-            source
+        addLog(
+            state
+                ? t("pumpTurnedOn")
+                : t("pumpTurnedOff")
         );
+
     }
+
 }
 
 
-// ========================================
-// TAMPILAN POMPA
-// ========================================
+/* =========================================================
+   PUMP UI
+   ========================================================= */
 
-function updatePump() {
+function updatePumpUI() {
 
-    const pumpStatusElement =
-        document.getElementById("pumpStatus");
+    const status =
+        document.getElementById(
+            "pumpStatus"
+        );
 
 
-    const systemPump =
+    const systemStatus =
         document.getElementById(
             "systemPumpStatus"
         );
 
 
-    if (pumpStatus) {
+    if (status) {
 
-        pumpStatusElement.className =
-            "pump-status on";
+        if (pumpStatus) {
 
-
-        pumpStatusElement.innerHTML = `
-
-            <div class="pump-status-icon">
-                🟢
-            </div>
-
-            <div>
-
-                <strong>
-                    Pompa Menyala
-                </strong>
-
-                <span>
-                    Sedang melakukan penyiraman
-                </span>
-
-            </div>
-
-        `;
+            status.className =
+                "pump-status on";
 
 
-        systemPump.innerText =
-            "● Menyala";
+            status.innerHTML = `
 
-        systemPump.className =
-            "online";
+                <div class="pump-status-icon">
+                    🟢
+                </div>
+
+                <div>
+
+                    <strong>
+                        ${t("pumpOn")}
+                    </strong>
+
+                    <span>
+                        ${t("watering")}
+                    </span>
+
+                </div>
+
+            `;
+
+        } else {
+
+            status.className =
+                "pump-status off";
+
+
+            status.innerHTML = `
+
+                <div class="pump-status-icon">
+                    🔴
+                </div>
+
+                <div>
+
+                    <strong>
+                        ${t("pumpOff")}
+                    </strong>
+
+                    <span>
+                        ${t("notWatering")}
+                    </span>
+
+                </div>
+
+            `;
+
+        }
+
     }
 
 
-    else {
+    if (systemStatus) {
 
-        pumpStatusElement.className =
-            "pump-status off";
-
-
-        pumpStatusElement.innerHTML = `
-
-            <div class="pump-status-icon">
-                🔴
-            </div>
-
-            <div>
-
-                <strong>
-                    Pompa Mati
-                </strong>
-
-                <span>
-                    Tidak sedang menyiram
-                </span>
-
-            </div>
-
-        `;
+        systemStatus.className =
+            pumpStatus
+                ? "online"
+                : "offline";
 
 
-        systemPump.innerText =
-            "● Mati";
+        systemStatus.innerHTML =
+            pumpStatus
+                ? `● ${t("on")}`
+                : `● ${t("off")}`;
 
-        systemPump.className =
-            "offline";
     }
 
-
-    updatePumpButtons();
 }
 
 
-// ========================================
-// TOMBOL POMPA
-// ========================================
+/* =========================================================
+   MODE
+   ========================================================= */
 
-function updatePumpButtons() {
+function setMode(mode) {
 
-    const onButton =
+    if (
+        mode !== "auto" &&
+        mode !== "manual" &&
+        mode !== "schedule"
+    ) {
+
+        return;
+
+    }
+
+
+    currentMode =
+        mode;
+
+
+    /*
+       Jika mode berubah ke AUTO,
+       langsung jalankan kontrol otomatis.
+    */
+
+    if (currentMode === "auto") {
+
+        automaticControl();
+
+    }
+
+
+    updateModeUI();
+
+}
+
+
+/* =========================================================
+   MODE UI
+   ========================================================= */
+
+function updateModeUI() {
+
+    const autoButton =
         document.getElementById(
-            "pumpOnButton"
+            "autoButton"
         );
 
-    const offButton =
+    const manualButton =
         document.getElementById(
-            "pumpOffButton"
+            "manualButton"
         );
+
+    const scheduleButton =
+        document.getElementById(
+            "scheduleButton"
+        );
+
+
+    if (autoButton) {
+
+        autoButton.classList.toggle(
+            "active",
+            currentMode === "auto"
+        );
+
+    }
+
+
+    if (manualButton) {
+
+        manualButton.classList.toggle(
+            "active",
+            currentMode === "manual"
+        );
+
+    }
+
+
+    if (scheduleButton) {
+
+        scheduleButton.classList.toggle(
+            "active",
+            currentMode === "schedule"
+        );
+
+    }
+
+
+    const modeText =
+        document.getElementById(
+            "modeText"
+        );
+
+
+    if (modeText) {
+
+        if (currentMode === "auto") {
+
+            modeText.textContent =
+                currentLanguage === "id"
+                    ? "OTOMATIS"
+                    : "AUTOMATIC";
+
+        }
+
+        if (currentMode === "manual") {
+
+            modeText.textContent =
+                currentLanguage === "id"
+                    ? "MANUAL"
+                    : "MANUAL";
+
+        }
+
+        if (currentMode === "schedule") {
+
+            modeText.textContent =
+                currentLanguage === "id"
+                    ? "TERJADWAL"
+                    : "SCHEDULED";
+
+        }
+
+    }
+
+
+    const description =
+        document.getElementById(
+            "modeDescription"
+        );
+
+
+    if (!description) {
+        return;
+    }
+
+
+    if (currentMode === "auto") {
+
+        description.textContent =
+            t("automaticDescription");
+
+    }
 
 
     if (currentMode === "manual") {
 
-        onButton.disabled = false;
+        description.textContent =
+            t("manualDescription");
 
-        offButton.disabled = false;
-
-        onButton.style.opacity = "1";
-
-        offButton.style.opacity = "1";
     }
 
-    else {
 
-        onButton.disabled = true;
+    if (currentMode === "schedule") {
 
-        offButton.disabled = true;
+        description.textContent =
+            t("scheduledDescription");
 
-        onButton.style.opacity = ".5";
-
-        offButton.style.opacity = ".5";
     }
+
 }
 
 
-// ========================================
-// LOG POMPA
-// ========================================
+/* =========================================================
+   CHART
+   ========================================================= */
 
-function addPumpLog(
-    status,
-    source
-) {
+function updateChart() {
 
-    const now =
-        new Date();
-
-
-    const log = {
-
-        date:
-            now.toLocaleDateString(
-                "id-ID"
-            ),
-
-        time:
-            now.toLocaleTimeString(
-                "id-ID"
-            ),
-
-        status:
-            status
-                ? "ON"
-                : "OFF",
-
-        source:
-            source
-    };
-
-
-    pumpLogs.unshift(log);
-
-
-    // Batasi 50 log
-
-    if (pumpLogs.length > 50) {
-
-        pumpLogs =
-            pumpLogs.slice(0,50);
-    }
-
-
-    saveLogs();
-
-    renderLogs();
-}
-
-
-// ========================================
-// TAMPILKAN LOG
-// ========================================
-
-function renderLogs() {
-
-    const container =
+    const line =
         document.getElementById(
-            "pumpLog"
+            "chartLine"
         );
 
 
-    if (pumpLogs.length === 0) {
+    const area =
+        document.getElementById(
+            "chartArea"
+        );
 
-        container.innerHTML = `
-
-            <div class="empty-log">
-
-                Belum ada aktivitas pompa.
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        pumpLogs.map(
-            log => `
-
-            <div class="log-item">
-
-                <div class="log-left">
-
-                    <div
-                        class="log-icon
-                        ${log.status === "ON"
-                            ? "on"
-                            : "off"}"
-                    >
-
-                        ${log.status === "ON"
-                            ? "🟢"
-                            : "🔴"}
-
-                    </div>
-
-
-                    <div class="log-main">
-
-                        <strong>
-                            Pompa ${log.status}
-                        </strong>
-
-                        <span>
-                            ${log.date}
-                            •
-                            Mode ${log.source}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="log-time">
-
-                    ${log.time}
-
-                </div>
-
-            </div>
-
-        `
-        ).join("");
-}
-
-
-// ========================================
-// HAPUS LOG
-// ========================================
-
-function clearLogs() {
 
     if (
-        !confirm(
-            "Hapus seluruh riwayat pompa?"
-        )
+        !line ||
+        !area ||
+        moistureHistory.length === 0
     ) {
 
         return;
+
     }
 
 
-    pumpLogs = [];
+    const chartLeft = 50;
+    const chartRight = 780;
 
-    saveLogs();
+    const chartTop = 20;
+    const chartBottom = 260;
 
-    renderLogs();
+
+    const width =
+        chartRight - chartLeft;
+
+
+    const height =
+        chartBottom - chartTop;
+
+
+    const points =
+        moistureHistory.map(
+            (value, index) => {
+
+                let x;
+
+
+                if (
+                    moistureHistory.length === 1
+                ) {
+
+                    x = chartLeft;
+
+                } else {
+
+                    x =
+                        chartLeft +
+                        (
+                            index /
+                            (
+                                moistureHistory.length - 1
+                            )
+                        ) *
+                        width;
+
+                }
+
+
+                const y =
+                    chartBottom -
+                    (
+                        value / 100
+                    ) *
+                    height;
+
+
+                return `${x},${y}`;
+
+            }
+        );
+
+
+    line.setAttribute(
+        "points",
+        points.join(" ")
+    );
+
+
+    const firstPoint =
+        points[0];
+
+
+    const lastPoint =
+        points[points.length - 1];
+
+
+    if (
+        firstPoint &&
+        lastPoint
+    ) {
+
+        const areaPoints =
+            `${firstPoint}
+             ${points.slice(1).join(" ")}
+             ${chartRight},${chartBottom}
+             ${chartLeft},${chartBottom}`;
+
+
+        area.setAttribute(
+            "points",
+            areaPoints
+        );
+
+    }
+
 }
 
 
-// ========================================
-// TAMBAH JADWAL
-// ========================================
+/* =========================================================
+   CHART TEXT
+   ========================================================= */
+
+function updateChartText() {
+
+    const current =
+        document.getElementById(
+            "chartCurrent"
+        );
+
+
+    if (current) {
+
+        current.textContent =
+            `${t("current")}: ${Math.round(moisture)}%`;
+
+    }
+
+}
+
+
+/* =========================================================
+   SCHEDULE
+   ========================================================= */
 
 function addSchedule() {
 
@@ -797,38 +1356,33 @@ function addSchedule() {
     if (!start || !end) {
 
         alert(
-            "Silakan isi waktu ON dan OFF."
+            currentLanguage === "id"
+                ? "Silakan isi waktu ON dan OFF."
+                : "Please enter the ON and OFF time."
         );
 
         return;
+
     }
 
 
-    if (
-        timeToMinutes(end) <=
-        timeToMinutes(start)
-    ) {
+    const schedule = {
 
-        alert(
-            "Waktu OFF harus lebih besar dari waktu ON."
-        );
-
-        return;
-    }
-
-
-    schedules.push({
+        id:
+            Date.now(),
 
         start:
             start,
 
         end:
-            end,
+            end
 
-        active:
-            true
+    };
 
-    });
+
+    schedules.push(
+        schedule
+    );
 
 
     saveSchedules();
@@ -837,231 +1391,407 @@ function addSchedule() {
 
 
     alert(
-        "Jadwal berhasil ditambahkan."
+        t("scheduleAdded")
     );
+
 }
 
 
-// ========================================
-// TAMPILKAN JADWAL
-// ========================================
+/* =========================================================
+   SAVE SCHEDULE
+   ========================================================= */
 
-function renderSchedules() {
+function saveSchedules() {
 
-    const container =
-        document.getElementById(
-            "scheduleList"
+    localStorage.setItem(
+        "smartWateringSchedules",
+        JSON.stringify(schedules)
+    );
+
+}
+
+
+/* =========================================================
+   DELETE SCHEDULE
+   ========================================================= */
+
+function deleteSchedule(id) {
+
+    schedules =
+        schedules.filter(
+            schedule =>
+                schedule.id !== id
         );
-
-
-    if (schedules.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="empty-schedule">
-
-                Belum ada jadwal pompa.
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        schedules.map(
-            (schedule,index) => `
-
-            <div class="schedule-item">
-
-                <div>
-
-                    <div class="schedule-time">
-
-                        ${schedule.start}
-
-                        <span>→</span>
-
-                        ${schedule.end}
-
-                    </div>
-
-                    <div class="schedule-status">
-
-                        ● Jadwal Aktif
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    class="delete-schedule"
-                    onclick="deleteSchedule(${index})"
-                >
-
-                    Hapus
-
-                </button>
-
-            </div>
-
-        `
-        ).join("");
-}
-
-
-// ========================================
-// HAPUS JADWAL
-// ========================================
-
-function deleteSchedule(index) {
-
-    schedules.splice(
-        index,
-        1
-    );
 
 
     saveSchedules();
 
     renderSchedules();
+
 }
 
 
-// ========================================
-// SIMULASI SENSOR
-// ========================================
+/* =========================================================
+   RENDER SCHEDULES
+   ========================================================= */
 
-function simulateSensor() {
+function renderSchedules() {
 
-    /*
-       Simulasi perubahan kelembapan.
-
-       Jika pompa ON:
-       kelembapan cenderung naik.
-
-       Jika pompa OFF:
-       kelembapan cenderung turun.
-    */
-
-
-    if (pumpStatus) {
-
-        moisture +=
-            Math.floor(
-                Math.random() * 5
-            ) + 1;
-
-    }
-
-    else {
-
-        moisture -=
-            Math.floor(
-                Math.random() * 4
-            );
-    }
-
-
-    // Batasi 10 - 95%
-
-    moisture =
-        Math.max(
-            10,
-            Math.min(
-                95,
-                moisture
-            )
+    const list =
+        document.getElementById(
+            "scheduleList"
         );
 
 
-    moistureHistory.push(
-        moisture
+    if (!list) {
+        return;
+    }
+
+
+    if (schedules.length === 0) {
+
+        list.innerHTML = `
+
+            <div class="empty-log">
+                ${t("noSchedule")}
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        schedules
+            .map(
+                schedule => `
+
+                <div class="schedule-item">
+
+                    <div>
+
+                        <div class="schedule-time">
+
+                            ${schedule.start}
+                            →
+                            ${schedule.end}
+
+                        </div>
+
+                        <div class="schedule-label">
+
+                            ${t("schedule")}
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="delete-schedule"
+                        onclick="deleteSchedule(${schedule.id})"
+                        title="${t("scheduleDeleted")}"
+                    >
+
+                        ×
+
+                    </button>
+
+                </div>
+
+            `
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   LOG
+   ========================================================= */
+
+function addLog(action) {
+
+    const now =
+        new Date();
+
+
+    const time =
+        now.toLocaleTimeString(
+            currentLanguage === "id"
+                ? "id-ID"
+                : "en-US",
+            {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }
+        );
+
+
+    logs.unshift({
+
+        id:
+            Date.now(),
+
+        action:
+            action,
+
+        time:
+            time
+
+    });
+
+
+    /*
+       Simpan maksimal 30 log
+    */
+
+    logs =
+        logs.slice(
+            0,
+            30
+        );
+
+
+    localStorage.setItem(
+        "smartWateringLogs",
+        JSON.stringify(logs)
     );
 
 
-    // Maksimal 30 titik
+    renderLogs();
 
-    if (
-        moistureHistory.length > 30
-    ) {
+}
 
-        moistureHistory.shift();
+
+/* =========================================================
+   RENDER LOGS
+   ========================================================= */
+
+function renderLogs() {
+
+    const container =
+        document.getElementById(
+            "pumpLog"
+        );
+
+
+    if (!container) {
+        return;
     }
 
 
-    updateMoisture();
+    if (logs.length === 0) {
+
+        container.innerHTML = `
+
+            <div class="empty-log">
+                ${t("noLog")}
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        logs
+            .map(
+                log => {
+
+                    const isOn =
+                        log.action
+                            .toLowerCase()
+                            .includes(
+                                "on"
+                            );
+
+
+                    return `
+
+                    <div class="log-item">
+
+                        <div class="log-left">
+
+                            <div class="log-icon">
+
+                                ${
+                                    isOn
+                                        ? "💧"
+                                        : "⛔"
+                                }
+
+                            </div>
+
+                            <div>
+
+                                <div class="log-title">
+
+                                    ${log.action}
+
+                                </div>
+
+                                <div class="log-time">
+
+                                    ${log.time}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="log-status">
+
+                            ${
+                                isOn
+                                    ? t("on")
+                                    : t("off")
+                            }
+
+                        </div>
+
+                    </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   CLEAR LOG
+   ========================================================= */
+
+function clearLogs() {
+
+    if (
+        !confirm(
+            t("confirmClear")
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    logs = [];
+
+
+    localStorage.setItem(
+        "smartWateringLogs",
+        JSON.stringify(logs)
+    );
+
+
+    renderLogs();
+
+
+    alert(
+        t("logsCleared")
+    );
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+
+function initialize() {
+
+    /*
+       Terapkan tema terlebih dahulu
+    */
+
+    applyTheme();
+
+
+    /*
+       Isi histori awal grafik
+    */
+
+    for (
+        let i = 0;
+        i < 15;
+        i++
+    ) {
+
+        moistureHistory.push(
+            moisture +
+            Math.floor(
+                Math.random() * 9
+            ) -
+            4
+        );
+
+    }
+
+
+    /*
+       Pastikan nilai histori
+       tetap 0 - 100
+    */
+
+    moistureHistory =
+        moistureHistory.map(
+            value =>
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        value
+                    )
+                )
+        );
+
+
+    /*
+       Tampilkan UI
+    */
+
+    applyTranslations();
+
+    updateMoistureUI();
+
+    updatePumpUI();
+
+    updateModeUI();
 
     updateChart();
 
+    renderSchedules();
 
-    // Kontrol sesuai mode
+    renderLogs();
 
-    if (currentMode === "auto") {
-
-        automaticPumpControl();
-    }
-
-    else if (
-        currentMode === "schedule"
-    ) {
-
-        schedulePumpControl();
-    }
 }
 
 
-// ========================================
-// JAM REAL-TIME
-// ========================================
-
-function updateScheduleStatus() {
-
-    if (
-        currentMode === "schedule"
-    ) {
-
-        schedulePumpControl();
-    }
-}
-
-
-// ========================================
-// START SYSTEM
-// ========================================
-
-updateMoisture();
-
-updateChart();
-
-updatePump();
-
-renderSchedules();
-
-renderLogs();
-
-updatePumpButtons();
-
-
-// Sensor berubah setiap 3 detik
+/* =========================================================
+   SIMULASI SENSOR
+   ========================================================= */
 
 setInterval(
-    simulateSensor,
+    simulateMoisture,
     3000
 );
 
 
-// Cek jadwal setiap 1 detik
+/* =========================================================
+   START APPLICATION
+   ========================================================= */
 
-setInterval(
-    updateScheduleStatus,
-    1000
-);
-
-
-console.log(
-    "Smart Watering Simulation aktif"
+document.addEventListener(
+    "DOMContentLoaded",
+    initialize
 );

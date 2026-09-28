@@ -3,11 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Smart Watering</title>
 
@@ -18,7 +14,9 @@
 
 <div class="app">
 
-    <!-- HEADER -->
+    <!-- =========================
+         HEADER
+    ========================== -->
     <header class="header">
 
         <div class="brand">
@@ -37,9 +35,11 @@
 
             <div class="brand-text">
 
-                <h1>Smart Watering</h1>
+                <h1 data-i18n="title">
+                    Smart Watering
+                </h1>
 
-                <p>
+                <p data-i18n="subtitle">
                     Monitoring & Kontrol Penyiraman Tanaman
                 </p>
 
@@ -47,13 +47,60 @@
 
         </div>
 
-        <div class="connection">
 
-            <span class="connection-dot"></span>
+        <!-- HEADER RIGHT -->
+        <div class="header-actions">
 
-            <div>
-                <strong>ESP32</strong>
-                <small>Simulasi</small>
+            <!-- LANGUAGE -->
+            <div class="language-switch">
+
+                <button
+                    id="langID"
+                    class="language-button active"
+                    onclick="setLanguage('id')"
+                >
+                    ID
+                </button>
+
+                <button
+                    id="langEN"
+                    class="language-button"
+                    onclick="setLanguage('en')"
+                >
+                    EN
+                </button>
+
+            </div>
+
+
+            <!-- THEME -->
+            <button
+                id="themeButton"
+                class="theme-button"
+                onclick="toggleTheme()"
+                title="Dark Mode"
+            >
+                🌙
+            </button>
+
+
+            <!-- CONNECTION -->
+            <div class="connection">
+
+                <span class="connection-dot"></span>
+
+                <div>
+
+                    <strong>
+                        ESP32
+                    </strong>
+
+                    <small data-i18n="simulation">
+                        Simulasi
+                    </small>
+
+                </div>
+
             </div>
 
         </div>
@@ -61,13 +108,15 @@
     </header>
 
 
+
     <main>
 
         <!-- =========================
-             DASHBOARD UTAMA
+             DASHBOARD
         ========================== -->
 
         <section class="dashboard-grid">
+
 
             <!-- KELEMBAPAN -->
             <div class="card moisture-card">
@@ -76,11 +125,14 @@
 
                     <div>
 
-                        <span class="card-label">
+                        <span
+                            class="card-label"
+                            data-i18n="soilSensor"
+                        >
                             SENSOR TANAH
                         </span>
 
-                        <h2>
+                        <h2 data-i18n="soilMoisture">
                             Kelembapan Tanah
                         </h2>
 
@@ -103,10 +155,12 @@
                         <div class="gauge-inner">
 
                             <strong>
-                                <span id="moisture">68</span>%
+                                <span id="moisture">
+                                    68
+                                </span>%
                             </strong>
 
-                            <small>
+                            <small data-i18n="moisture">
                                 Kelembapan
                             </small>
 
@@ -122,12 +176,14 @@
                             class="condition good"
                         >
                             <span>●</span>
-                            Tanah Cukup Lembap
+                            <span data-i18n="soilGood">
+                                Tanah Cukup Lembap
+                            </span>
                         </div>
 
-                        <p>
-                            Data sensor diperbarui secara
-                            berkala dalam mode simulasi.
+                        <p data-i18n="sensorUpdate">
+                            Data sensor diperbarui secara berkala
+                            dalam mode simulasi.
                         </p>
 
                     </div>
@@ -137,6 +193,7 @@
             </div>
 
 
+
             <!-- POMPA -->
             <div class="card pump-card">
 
@@ -144,11 +201,14 @@
 
                     <div>
 
-                        <span class="card-label">
+                        <span
+                            class="card-label"
+                            data-i18n="actuator"
+                        >
                             AKTUATOR
                         </span>
 
-                        <h2>
+                        <h2 data-i18n="pumpStatus">
                             Status Pompa
                         </h2>
 
@@ -172,11 +232,11 @@
 
                     <div>
 
-                        <strong>
+                        <strong data-i18n="pumpOff">
                             Pompa Mati
                         </strong>
 
-                        <span>
+                        <span data-i18n="notWatering">
                             Tidak sedang menyiram
                         </span>
 
@@ -192,7 +252,10 @@
                         class="button button-on"
                         onclick="pumpControl('on')"
                     >
-                        💧 Nyalakan
+                        💧
+                        <span data-i18n="turnOn">
+                            Nyalakan
+                        </span>
                     </button>
 
                     <button
@@ -200,7 +263,10 @@
                         class="button button-off"
                         onclick="pumpControl('off')"
                     >
-                        ⛔ Matikan
+                        ⛔
+                        <span data-i18n="turnOff">
+                            Matikan
+                        </span>
                     </button>
 
                 </div>
@@ -208,6 +274,7 @@
             </div>
 
         </section>
+
 
 
         <!-- =========================
@@ -220,23 +287,29 @@
 
                 <div>
 
-                    <span class="card-label">
+                    <span
+                        class="card-label"
+                        data-i18n="sensorData"
+                    >
                         DATA SENSOR
                     </span>
 
-                    <h2>
+                    <h2 data-i18n="moistureChart">
                         Grafik Kelembapan
                     </h2>
 
-                    <p>
+                    <p data-i18n="chartDescription">
                         Perubahan kelembapan tanah secara real-time.
                     </p>
 
                 </div>
 
                 <div class="live-badge">
+
                     <span></span>
+
                     LIVE
+
                 </div>
 
             </div>
@@ -347,9 +420,8 @@
 
             <div class="chart-info">
 
-                <span>
-                    ●
-                    Kelembapan tanah
+                <span data-i18n="soilMoistureLegend">
+                    ● Kelembapan tanah
                 </span>
 
                 <span id="chartCurrent">
@@ -359,6 +431,7 @@
             </div>
 
         </section>
+
 
 
         <!-- =========================
@@ -371,15 +444,18 @@
 
                 <div>
 
-                    <span class="card-label">
+                    <span
+                        class="card-label"
+                        data-i18n="systemSettings"
+                    >
                         PENGATURAN SISTEM
                     </span>
 
-                    <h2>
+                    <h2 data-i18n="wateringMode">
                         Mode Penyiraman
                     </h2>
 
-                    <p>
+                    <p data-i18n="modeDescription">
                         Pilih bagaimana pompa dikendalikan.
                     </p>
 
@@ -387,7 +463,9 @@
 
                 <div class="mode-indicator">
 
-                    Mode:
+                    <span data-i18n="mode">
+                        Mode:
+                    </span>
 
                     <strong id="modeText">
                         OTOMATIS
@@ -412,11 +490,11 @@
 
                     <div class="mode-option-text">
 
-                        <strong>
+                        <strong data-i18n="automatic">
                             Otomatis
                         </strong>
 
-                        <span>
+                        <span data-i18n="automaticDesc">
                             Pompa dikendalikan berdasarkan
                             kelembapan tanah.
                         </span>
@@ -442,11 +520,11 @@
 
                     <div class="mode-option-text">
 
-                        <strong>
+                        <strong data-i18n="manual">
                             Manual
                         </strong>
 
-                        <span>
+                        <span data-i18n="manualDesc">
                             Pompa dikendalikan menggunakan
                             tombol.
                         </span>
@@ -472,11 +550,11 @@
 
                     <div class="mode-option-text">
 
-                        <strong>
+                        <strong data-i18n="scheduled">
                             Terjadwal
                         </strong>
 
-                        <span>
+                        <span data-i18n="scheduledDesc">
                             Pompa mengikuti jadwal yang
                             telah dibuat.
                         </span>
@@ -503,6 +581,7 @@
         </section>
 
 
+
         <!-- =========================
              PENJADWALAN
         ========================== -->
@@ -513,15 +592,18 @@
 
                 <div>
 
-                    <span class="card-label">
+                    <span
+                        class="card-label"
+                        data-i18n="timeAutomation"
+                    >
                         AUTOMASI WAKTU
                     </span>
 
-                    <h2>
+                    <h2 data-i18n="pumpScheduling">
                         Penjadwalan Pompa
                     </h2>
 
-                    <p>
+                    <p data-i18n="scheduleDescription">
                         Atur waktu pompa menyala dan mati.
                     </p>
 
@@ -538,7 +620,7 @@
 
                 <div class="time-input">
 
-                    <label>
+                    <label data-i18n="pumpOn">
                         Pompa ON
                     </label>
 
@@ -558,7 +640,7 @@
 
                 <div class="time-input">
 
-                    <label>
+                    <label data-i18n="pumpOff">
                         Pompa OFF
                     </label>
 
@@ -575,7 +657,10 @@
                     class="add-schedule-button"
                     onclick="addSchedule()"
                 >
-                    + Tambah Jadwal
+                    + 
+                    <span data-i18n="addSchedule">
+                        Tambah Jadwal
+                    </span>
                 </button>
 
             </div>
@@ -590,8 +675,9 @@
         </section>
 
 
+
         <!-- =========================
-             LOG POMPA
+             LOG
         ========================== -->
 
         <section class="card log-card">
@@ -600,15 +686,18 @@
 
                 <div>
 
-                    <span class="card-label">
+                    <span
+                        class="card-label"
+                        data-i18n="activityHistory"
+                    >
                         RIWAYAT AKTIVITAS
                     </span>
 
-                    <h2>
+                    <h2 data-i18n="pumpLog">
                         Log Pompa
                     </h2>
 
-                    <p>
+                    <p data-i18n="logDescription">
                         Catatan waktu pompa menyala dan mati.
                     </p>
 
@@ -618,7 +707,9 @@
                     class="clear-log"
                     onclick="clearLogs()"
                 >
-                    Hapus Log
+                    <span data-i18n="clearLog">
+                        Hapus Log
+                    </span>
                 </button>
 
             </div>
@@ -633,6 +724,7 @@
         </section>
 
 
+
         <!-- =========================
              STATUS SISTEM
         ========================== -->
@@ -643,11 +735,14 @@
 
                 <div>
 
-                    <span class="card-label">
+                    <span
+                        class="card-label"
+                        data-i18n="monitoring"
+                    >
                         MONITORING
                     </span>
 
-                    <h2>
+                    <h2 data-i18n="systemStatus">
                         Status Sistem
                     </h2>
 
@@ -671,7 +766,10 @@
                         </span>
 
                         <strong class="online">
-                            ● Simulasi
+                            ●
+                            <span data-i18n="simulation">
+                                Simulasi
+                            </span>
                         </strong>
 
                     </div>
@@ -687,12 +785,15 @@
 
                     <div>
 
-                        <span>
+                        <span data-i18n="soilSensor">
                             Sensor Tanah
                         </span>
 
                         <strong class="online">
-                            ● Aktif
+                            ●
+                            <span data-i18n="active">
+                                Aktif
+                            </span>
                         </strong>
 
                     </div>
@@ -713,7 +814,10 @@
                         </span>
 
                         <strong class="online">
-                            ● Simulasi
+                            ●
+                            <span data-i18n="simulation">
+                                Simulasi
+                            </span>
                         </strong>
 
                     </div>
@@ -729,7 +833,7 @@
 
                     <div>
 
-                        <span>
+                        <span data-i18n="pump">
                             Pompa
                         </span>
 
@@ -737,7 +841,10 @@
                             id="systemPumpStatus"
                             class="offline"
                         >
-                            ● Mati
+                            ●
+                            <span data-i18n="off">
+                                Mati
+                            </span>
                         </strong>
 
                     </div>
@@ -749,6 +856,7 @@
         </section>
 
 
+
         <!-- INFO -->
         <div class="demo-info">
 
@@ -758,11 +866,11 @@
 
             <div>
 
-                <strong>
+                <strong data-i18n="simulationMode">
                     Mode Simulasi
                 </strong>
 
-                <p>
+                <p data-i18n="simulationInfo">
                     Sistem saat ini belum terhubung ke ESP32.
                     Data sensor, pompa, jadwal dan log
                     masih dijalankan melalui simulasi browser.
@@ -773,6 +881,7 @@
         </div>
 
     </main>
+
 
 
     <footer>
@@ -793,5 +902,4 @@
 <script src="script.js"></script>
 
 </body>
-
 </html>
