@@ -1,275 +1,192 @@
-// ==========================================
+
+#include <DHTesp.h>
+
 // SMART WATERING - ESP32-S3
-// ==========================================
 
-// ---------- PIN ----------
+// PIN SENSOR
 const int pinSensorTanah = 3;
-const int pinPompa       = 16;
+const int pinDHT = 4;
 
-const int pinTombolMode  = 18;
-const int pinPompaON     = 19;
-const int pinPompaOFF    = 20;
+// PIN AKTUATOR
+const int pinPompa = 16;
+const int pinKipas = 17;
 
-const int pinBuzzer      = 21;
+// PIN TOMBOL LAMA
+const int pinTombolMode = 18;
+const int pinPompaON = 19;
+const int pinPompaOFF = 20;
+const int pinBuzzer = 21;
 
-
-// ---------- PENGATURAN ----------
-const int batasKelembapan = 40;
+// BATAS OTOMATIS
+int batasKelembapan = 40;
+int batasSuhu = 36;
 const int batasSangatKering = 20;
 
-
-// ---------- MODE ----------
+// STATUS SISTEM
 bool modeManual = false;
-
-
-// ---------- STATUS POMPA ----------
 bool pompaON = false;
+bool kipasON = false;
+bool kondisiSangatKeringSebelumnya = false;
 
+DHTesp dhtSensor;
 
-// ==========================================
-// FUNGSI BUZZER
-// ==========================================
-
-void beep() {
-
-  tone(pinBuzzer, 2000);
-  delay(150);
+// Bunyi buzzer
+void beep(int frekuensi = 2000, int durasi = 150) {
+  tone(pinBuzzer, frekuensi);
+  delay(durasi);
   noTone(pinBuzzer);
-
 }
 
+// Kontrol relay pompa
+void kontrolPompa(bool status) {
+  pompaON = status;
+  digitalWrite(pinPompa, pompaON ? HIGH : LOW);
+}
 
-// ==========================================
-// SETUP
-// ==========================================
+// Kontrol relay kipas
+void kontrolKipas(bool status) {
+  kipasON = status;
+  digitalWrite(pinKipas, kipasON ? HIGH : LOW);
+}
 
 void setup() {
-
   Serial.begin(115200);
 
-  // Pompa / LED
   pinMode(pinPompa, OUTPUT);
-  digitalWrite(pinPompa, LOW);
+  pinMode(pinKipas, OUTPUT);
 
-  // Tombol
   pinMode(pinTombolMode, INPUT_PULLUP);
   pinMode(pinPompaON, INPUT_PULLUP);
   pinMode(pinPompaOFF, INPUT_PULLUP);
 
-  // Buzzer
   pinMode(pinBuzzer, OUTPUT);
-  noTone(pinBuzzer);
 
+  kontrolPompa(false);
+  kontrolKipas(false);
 
-  Serial.println("==============================");
-  Serial.println("      SMART WATERING ESP32");
-  Serial.println("==============================");
+  dhtSensor.setup(pinDHT, DHTesp::DHT22);
+
+  analogReadResolution(12);
+
+  Serial.println();
+  Serial.println("================================");
+  Serial.println("       SMART WATERING");
+  Serial.println("================================");
   Serial.println("Mode awal: OTOMATIS");
-
+  Serial.println("Batas kelembapan: 40%");
+  Serial.println("Batas suhu: 36 C");
 }
 
-
-// ==========================================
-// LOOP
-// ==========================================
-
 void loop() {
-
-  // ----------------------------------------
-  // 1. BACA SENSOR
-  // ----------------------------------------
-
+  // BACA SENSOR TANAH
   int nilaiSensor = analogRead(pinSensorTanah);
 
-  int kelembapan = map(
-    nilaiSensor,
-    4095,
-    0,
-    0,
-    100
-  );
+  int kelembapan = map(nilaiSensor, 4095, 0, 0, 100);
+  kelembapan = constrain(kelembapan, 0, 100);
 
-  kelembapan = constrain(
-    kelembapan,
-    0,
-    100
-  );
+  // BACA SENSOR SUHU
+  TempAndHumidity dataDHT = dhtSensor.getTempAndHumidity();
 
+  float suhu = dataDHT.temperature;
 
-  // ----------------------------------------
-  // 2. TOMBOL MODE
-  // ----------------------------------------
+  // CEK PEMBACAAN DHT
+  bool sensorDHTValid = !isnan(suhu);
 
+  // TOMBOL GANTI MODE
   if (digitalRead(pinTombolMode) == LOW) {
+    delay(50);
 
-    modeManual = !modeManual;
-
-    beep();
-
-    Serial.println();
-    Serial.println(">>> MODE BERUBAH <<<");
-
-    if (modeManual) {
-
-      Serial.println("Mode: MANUAL");
-
-    } 
-    else {
-
-      Serial.println("Mode: OTOMATIS");
-
-    }
-
-    // Tunggu tombol dilepas
-    while (digitalRead(pinTombolMode) == LOW) {
-      delay(10);
-    }
-
-    delay(200);
-  }
-
-
-  // ----------------------------------------
-  // 3. MODE OTOMATIS
-  // ----------------------------------------
-
-  if (modeManual == false) {
-
-    if (kelembapan < batasKelembapan) {
-
-      pompaON = true;
-
-    } 
-    else {
-
-      pompaON = false;
-
-    }
-
-  }
-
-
-  // ----------------------------------------
-  // 4. MODE MANUAL
-  // ----------------------------------------
-
-  else {
-
-    // Tombol POMPA ON
-    if (digitalRead(pinPompaON) == LOW) {
-
-      pompaON = true;
+    if (digitalRead(pinTombolMode) == LOW) {
+      modeManual = !modeManual;
 
       beep();
 
-      Serial.println(">>> POMPA MANUAL: ON");
+      Serial.print("Mode: ");
+      Serial.println(modeManual ? "MANUAL" : "OTOMATIS");
+
+      while (digitalRead(pinTombolMode) == LOW) {
+        delay(10);
+      }
+    }
+  }
+
+  // KONTROL POMPA
+  if (!modeManual) {
+    // MODE OTOMATIS
+    if (kelembapan < batasKelembapan) {
+      kontrolPompa(true);
+    } else {
+      kontrolPompa(false);
+    }
+  } else {
+    // MODE MANUAL: TOMBOL POMPA ON
+    if (digitalRead(pinPompaON) == LOW) {
+      kontrolPompa(true);
+      beep();
 
       while (digitalRead(pinPompaON) == LOW) {
         delay(10);
       }
-
-      delay(200);
     }
 
-
-    // Tombol POMPA OFF
+    // MODE MANUAL: TOMBOL POMPA OFF
     if (digitalRead(pinPompaOFF) == LOW) {
-
-      pompaON = false;
-
+      kontrolPompa(false);
       beep();
-
-      Serial.println(">>> POMPA MANUAL: OFF");
 
       while (digitalRead(pinPompaOFF) == LOW) {
         delay(10);
       }
-
-      delay(200);
     }
-
   }
 
-
-  // ----------------------------------------
-  // 5. PERINGATAN TANAH SANGAT KERING
-  // ----------------------------------------
-
-  if (kelembapan < batasSangatKering) {
-
-    // Buzzer berbunyi pendek
-    // sebagai peringatan
-    tone(pinBuzzer, 1500);
-    delay(100);
-    noTone(pinBuzzer);
-
+  // KONTROL KIPAS OTOMATIS
+  if (sensorDHTValid) {
+    if (suhu > batasSuhu) {
+      kontrolKipas(true);
+    } else {
+      kontrolKipas(false);
+    }
+  } else {
+    // Jika sensor gagal dibaca, kipas dimatikan
+    kontrolKipas(false);
   }
 
+  // PERINGATAN TANAH SANGAT KERING
+  bool kondisiSangatKering = kelembapan < batasSangatKering;
 
-  // ----------------------------------------
-  // 6. KONTROL POMPA
-  // ----------------------------------------
-
-  if (pompaON) {
-
-    digitalWrite(pinPompa, HIGH);
-
-  } 
-  else {
-
-    digitalWrite(pinPompa, LOW);
-
+  if (kondisiSangatKering && !kondisiSangatKeringSebelumnya) {
+    beep(1500, 100);
   }
 
+  kondisiSangatKeringSebelumnya = kondisiSangatKering;
 
-  // ----------------------------------------
-  // 7. MONITOR SERIAL
-  // ----------------------------------------
+  // TAMPILKAN DATA DI SERIAL MONITOR
+  Serial.println("--------------------------------");
 
-  Serial.print("Sensor: ");
-  Serial.print(nilaiSensor);
+  Serial.print("Sensor tanah: ");
+  Serial.println(nilaiSensor);
 
-  Serial.print(" | Kelembapan: ");
+  Serial.print("Kelembapan tanah: ");
   Serial.print(kelembapan);
-  Serial.print("%");
+  Serial.println("%");
 
-  Serial.print(" | Mode: ");
-
-  if (modeManual) {
-    Serial.print("MANUAL");
-  } 
-  else {
-    Serial.print("OTOMATIS");
+  if (sensorDHTValid) {
+    Serial.print("Suhu: ");
+    Serial.print(suhu);
+    Serial.println(" C");
+  } else {
+    Serial.println("Suhu: Gagal membaca sensor DHT");
   }
 
-  Serial.print(" | Pompa: ");
+  Serial.print("Mode: ");
+  Serial.println(modeManual ? "MANUAL" : "OTOMATIS");
 
-  if (pompaON) {
-    Serial.print("ON");
-  } 
-  else {
-    Serial.print("OFF");
-  }
+  Serial.print("Pompa: ");
+  Serial.println(pompaON ? "ON" : "OFF");
 
+  Serial.print("Kipas: ");
+  Serial.println(kipasON ? "ON" : "OFF");
 
-  // Status kondisi tanah
-  if (kelembapan < 20) {
-
-    Serial.println(" | PERINGATAN: SANGAT KERING");
-
-  }
-  else if (kelembapan < 40) {
-
-    Serial.println(" | Tanah kering");
-
-  }
-  else {
-
-    Serial.println(" | Tanah cukup lembap");
-
-  }
-
-
-  delay(500);
-
+  delay(1000);
 }

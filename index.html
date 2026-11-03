@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -14,9 +15,7 @@
 
 <div class="app">
 
-    <!-- =========================
-         HEADER
-    ========================== -->
+    <!-- HEADER -->
     <header class="header">
 
         <div class="brand">
@@ -47,11 +46,9 @@
 
         </div>
 
-
         <!-- HEADER RIGHT -->
         <div class="header-actions">
 
-            <!-- LANGUAGE -->
             <div class="language-switch">
 
                 <button
@@ -72,8 +69,6 @@
 
             </div>
 
-
-            <!-- THEME -->
             <button
                 id="themeButton"
                 class="theme-button"
@@ -83,22 +78,16 @@
                 🌙
             </button>
 
-
-            <!-- CONNECTION -->
             <div class="connection">
 
                 <span class="connection-dot"></span>
 
                 <div>
-
-                    <strong>
-                        ESP32
-                    </strong>
+                    <strong>ESP32</strong>
 
                     <small data-i18n="simulation">
                         Simulasi
                     </small>
-
                 </div>
 
             </div>
@@ -108,27 +97,19 @@
     </header>
 
 
-
     <main>
 
-        <!-- =========================
-             DASHBOARD
-        ========================== -->
-
+        <!-- DASHBOARD SENSOR DAN AKTUATOR -->
         <section class="dashboard-grid">
 
-
-            <!-- KELEMBAPAN -->
+            <!-- KELEMBAPAN TANAH -->
             <div class="card moisture-card">
 
                 <div class="card-header">
 
                     <div>
 
-                        <span
-                            class="card-label"
-                            data-i18n="soilSensor"
-                        >
+                        <span class="card-label" data-i18n="soilSensor">
                             SENSOR TANAH
                         </span>
 
@@ -144,20 +125,14 @@
 
                 </div>
 
-
                 <div class="moisture-content">
 
-                    <div
-                        class="moisture-gauge"
-                        id="moistureGauge"
-                    >
+                    <div class="moisture-gauge" id="moistureGauge">
 
                         <div class="gauge-inner">
 
                             <strong>
-                                <span id="moisture">
-                                    68
-                                </span>%
+                                <span id="moisture">68</span>%
                             </strong>
 
                             <small data-i18n="moisture">
@@ -168,17 +143,16 @@
 
                     </div>
 
-
                     <div class="moisture-info">
 
-                        <div
-                            id="condition"
-                            class="condition good"
-                        >
+                        <div id="condition" class="condition good">
+
                             <span>●</span>
+
                             <span data-i18n="soilGood">
                                 Tanah Cukup Lembap
                             </span>
+
                         </div>
 
                         <p data-i18n="sensorUpdate">
@@ -193,18 +167,59 @@
             </div>
 
 
+            <!-- SUHU DHT11 -->
+            <div class="card temperature-card">
 
-            <!-- POMPA -->
+                <div class="card-header">
+
+                    <div>
+
+                        <span class="card-label">
+                            SENSOR DHT11
+                        </span>
+
+                        <h2>
+                            Suhu Lingkungan
+                        </h2>
+
+                    </div>
+
+                    <div class="sensor-icon">
+                        🌡️
+                    </div>
+
+                </div>
+
+                <div class="temperature-content">
+
+                    <div class="temperature-value">
+                        <strong>
+                            <span id="temperature">--</span>°C
+                        </strong>
+                    </div>
+
+                    <div id="temperatureCondition" class="condition">
+                        <span>●</span>
+                        <span>Menunggu data suhu</span>
+                    </div>
+
+                    <p>
+                        Data suhu dari sensor DHT11.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- STATUS POMPA -->
             <div class="card pump-card">
 
                 <div class="card-header">
 
                     <div>
 
-                        <span
-                            class="card-label"
-                            data-i18n="actuator"
-                        >
+                        <span class="card-label" data-i18n="actuator">
                             AKTUATOR
                         </span>
 
@@ -220,11 +235,7 @@
 
                 </div>
 
-
-                <div
-                    id="pumpStatus"
-                    class="pump-status off"
-                >
+                <div id="pumpStatus" class="pump-status off">
 
                     <div class="pump-status-icon">
                         🔴
@@ -243,7 +254,6 @@
                     </div>
 
                 </div>
-
 
                 <div class="pump-buttons">
 
@@ -273,24 +283,173 @@
 
             </div>
 
+
+            <!-- STATUS KIPAS -->
+            <div class="card fan-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <span class="card-label">
+                            AKTUATOR
+                        </span>
+
+                        <h2>
+                            Status Kipas
+                        </h2>
+
+                    </div>
+
+                    <div class="sensor-icon">
+                        🌀
+                    </div>
+
+                </div>
+
+                <div id="fanStatus" class="pump-status off">
+
+                    <div class="pump-status-icon">
+                        🔴
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Kipas Mati
+                        </strong>
+
+                        <span>
+                            Kipas tidak aktif
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    Kipas menyala jika suhu melebihi
+                    batas yang ditentukan.
+                </p>
+
+            </div>
+
         </section>
 
 
+        <!-- PENGATURAN AMBANG BATAS -->
+        <section class="card threshold-card">
 
-        <!-- =========================
-             GRAFIK
-        ========================== -->
+            <div class="section-title">
 
+                <div>
+
+                    <span class="card-label">
+                        PENGATURAN OTOMATIS
+                    </span>
+
+                    <h2>
+                        Ambang Batas Sensor
+                    </h2>
+
+                    <p>
+                        Atur nilai batas untuk mengendalikan
+                        pompa dan kipas secara otomatis.
+                    </p>
+
+                </div>
+
+                <div class="sensor-icon">
+                    ⚙️
+                </div>
+
+            </div>
+
+            <div class="threshold-grid">
+
+                <!-- AMBANG KELEMBAPAN -->
+                <div class="threshold-item">
+
+                    <label for="moistureThreshold">
+                        Batas Kelembapan Tanah
+                    </label>
+
+                    <div class="threshold-input">
+
+                        <input
+                            type="number"
+                            id="moistureThreshold"
+                            min="0"
+                            max="100"
+                            step="1"
+                            value="40"
+                        >
+
+                        <span>%</span>
+
+                    </div>
+
+                    <small>
+                        Pompa menyala jika kelembapan tanah
+                        di bawah nilai ini.
+                    </small>
+
+                </div>
+
+
+                <!-- AMBANG SUHU -->
+                <div class="threshold-item">
+
+                    <label for="temperatureThreshold">
+                        Batas Suhu
+                    </label>
+
+                    <div class="threshold-input">
+
+                        <input
+                            type="number"
+                            id="temperatureThreshold"
+                            min="0"
+                            max="80"
+                            step="1"
+                            value="36"
+                        >
+
+                        <span>°C</span>
+
+                    </div>
+
+                    <small>
+                        Kipas menyala jika suhu melebihi
+                        nilai ini.
+                    </small>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                id="saveThresholdButton"
+                class="add-schedule-button"
+                onclick="saveThresholds()"
+            >
+                💾 Simpan Pengaturan
+            </button>
+
+            <p id="thresholdMessage" aria-live="polite"></p>
+
+        </section>
+
+
+        <!-- GRAFIK KELEMBAPAN -->
         <section class="card graph-card">
 
             <div class="section-title">
 
                 <div>
 
-                    <span
-                        class="card-label"
-                        data-i18n="sensorData"
-                    >
+                    <span class="card-label" data-i18n="sensorData">
                         DATA SENSOR
                     </span>
 
@@ -313,7 +472,6 @@
                 </div>
 
             </div>
-
 
             <div class="chart-container">
 
@@ -363,43 +521,23 @@
                         class="chart-grid"
                     />
 
-                    <text
-                        x="15"
-                        y="27"
-                        class="chart-label"
-                    >
+                    <text x="15" y="27" class="chart-label">
                         100%
                     </text>
 
-                    <text
-                        x="25"
-                        y="87"
-                        class="chart-label"
-                    >
+                    <text x="25" y="87" class="chart-label">
                         75%
                     </text>
 
-                    <text
-                        x="25"
-                        y="147"
-                        class="chart-label"
-                    >
+                    <text x="25" y="147" class="chart-label">
                         50%
                     </text>
 
-                    <text
-                        x="25"
-                        y="207"
-                        class="chart-label"
-                    >
+                    <text x="25" y="207" class="chart-label">
                         25%
                     </text>
 
-                    <text
-                        x="32"
-                        y="267"
-                        class="chart-label"
-                    >
+                    <text x="32" y="267" class="chart-label">
                         0%
                     </text>
 
@@ -417,7 +555,6 @@
 
             </div>
 
-
             <div class="chart-info">
 
                 <span data-i18n="soilMoistureLegend">
@@ -433,21 +570,14 @@
         </section>
 
 
-
-        <!-- =========================
-             MODE
-        ========================== -->
-
+        <!-- MODE PENYIRAMAN -->
         <section class="card mode-card">
 
             <div class="section-title">
 
                 <div>
 
-                    <span
-                        class="card-label"
-                        data-i18n="systemSettings"
-                    >
+                    <span class="card-label" data-i18n="systemSettings">
                         PENGATURAN SISTEM
                     </span>
 
@@ -474,7 +604,6 @@
                 </div>
 
             </div>
-
 
             <div class="mode-grid">
 
@@ -569,33 +698,87 @@
 
             </div>
 
+            <div id="modeDescription" class="mode-description">
 
-            <div
-                id="modeDescription"
-                class="mode-description"
-            >
                 🤖 Sistem akan mengatur pompa berdasarkan
                 kondisi kelembapan tanah.
+
             </div>
 
         </section>
 
+        <!-- PENGATURAN AMBANG BATAS -->
+    <section class="card threshold-card">
+        <div class="section-heading">
+            <span class="section-label">PENGATURAN SENSOR</span>
+            <h2>Ambang Batas Otomatis</h2>
+            <p>
+                Atur batas kelembapan tanah untuk pompa
+                dan batas suhu untuk kipas.
+            </p>
+        </div>
+
+        <div class="threshold-grid">
+        <!-- BATAS KELEMBAPAN -->
+            <div class="threshold-item">
+                <label for="moistureThreshold">
+                    Kelembapan Tanah (%)
+                </label>
+
+            <input
+                type="number"
+                id="moistureThreshold"
+                min="0"
+                max="100"
+                value="40"
+            >
+
+            <small>
+                Pompa menyala jika kelembapan tanah
+                di bawah nilai ini.
+            </small>
+        </div>
+
+        <!-- BATAS SUHU -->
+        <div class="threshold-item">
+            <label for="temperatureThreshold">
+                Suhu Lingkungan (°C)
+            </label>
+
+            <input
+                type="number"
+                id="temperatureThreshold"
+                min="0"
+                max="80"
+                value="36"
+            >
+
+            <small>
+                Kipas menyala jika suhu melebihi nilai ini.
+            </small>
+        </div>
+    </div>
+
+    <button
+        type="button"
+        id="saveThresholdButton"
+        class="primary-button"
+    >
+        Simpan Pengaturan
+    </button>
+
+    <p id="thresholdMessage" class="threshold-message"></p>
+</section>
 
 
-        <!-- =========================
-             PENJADWALAN
-        ========================== -->
-
+        <!-- PENJADWALAN POMPA -->
         <section class="card schedule-card">
 
             <div class="section-title">
 
                 <div>
 
-                    <span
-                        class="card-label"
-                        data-i18n="timeAutomation"
-                    >
+                    <span class="card-label" data-i18n="timeAutomation">
                         AUTOMASI WAKTU
                     </span>
 
@@ -615,7 +798,6 @@
 
             </div>
 
-
             <div class="schedule-form">
 
                 <div class="time-input">
@@ -632,11 +814,9 @@
 
                 </div>
 
-
                 <div class="time-arrow">
                     →
                 </div>
-
 
                 <div class="time-input">
 
@@ -652,12 +832,11 @@
 
                 </div>
 
-
                 <button
                     class="add-schedule-button"
                     onclick="addSchedule()"
                 >
-                    + 
+                    +
                     <span data-i18n="addSchedule">
                         Tambah Jadwal
                     </span>
@@ -665,31 +844,20 @@
 
             </div>
 
-
-            <div
-                id="scheduleList"
-                class="schedule-list"
-            >
+            <div id="scheduleList" class="schedule-list">
             </div>
 
         </section>
 
 
-
-        <!-- =========================
-             LOG
-        ========================== -->
-
+        <!-- LOG POMPA -->
         <section class="card log-card">
 
             <div class="section-title">
 
                 <div>
 
-                    <span
-                        class="card-label"
-                        data-i18n="activityHistory"
-                    >
+                    <span class="card-label" data-i18n="activityHistory">
                         RIWAYAT AKTIVITAS
                     </span>
 
@@ -714,31 +882,20 @@
 
             </div>
 
-
-            <div
-                id="pumpLog"
-                class="pump-log"
-            >
+            <div id="pumpLog" class="pump-log">
             </div>
 
         </section>
 
 
-
-        <!-- =========================
-             STATUS SISTEM
-        ========================== -->
-
+        <!-- STATUS SISTEM -->
         <section class="card">
 
             <div class="section-title">
 
                 <div>
 
-                    <span
-                        class="card-label"
-                        data-i18n="monitoring"
-                    >
+                    <span class="card-label" data-i18n="monitoring">
                         MONITORING
                     </span>
 
@@ -750,9 +907,9 @@
 
             </div>
 
-
             <div class="system-status-grid">
 
+                <!-- ESP32 -->
                 <div class="system-item">
 
                     <div class="system-icon">
@@ -761,9 +918,7 @@
 
                     <div>
 
-                        <span>
-                            ESP32
-                        </span>
+                        <span>ESP32</span>
 
                         <strong class="online">
                             ●
@@ -777,6 +932,7 @@
                 </div>
 
 
+                <!-- SENSOR TANAH -->
                 <div class="system-item">
 
                     <div class="system-icon">
@@ -801,6 +957,29 @@
                 </div>
 
 
+                <!-- DHT11 -->
+                <div class="system-item">
+
+                    <div class="system-icon">
+                        🌡️
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Sensor DHT11
+                        </span>
+
+                        <strong id="systemDhtStatus" class="offline">
+                            ● Belum Terhubung
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- WIFI -->
                 <div class="system-item">
 
                     <div class="system-icon">
@@ -809,9 +988,7 @@
 
                     <div>
 
-                        <span>
-                            Wi-Fi
-                        </span>
+                        <span>Wi-Fi</span>
 
                         <strong class="online">
                             ●
@@ -825,6 +1002,7 @@
                 </div>
 
 
+                <!-- POMPA -->
                 <div class="system-item">
 
                     <div class="system-icon">
@@ -837,14 +1015,33 @@
                             Pompa
                         </span>
 
-                        <strong
-                            id="systemPumpStatus"
-                            class="offline"
-                        >
+                        <strong id="systemPumpStatus" class="offline">
                             ●
                             <span data-i18n="off">
                                 Mati
                             </span>
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- KIPAS -->
+                <div class="system-item">
+
+                    <div class="system-icon">
+                        🌀
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Kipas
+                        </span>
+
+                        <strong id="systemFanStatus" class="offline">
+                            ● Mati
                         </strong>
 
                     </div>
@@ -856,8 +1053,7 @@
         </section>
 
 
-
-        <!-- INFO -->
+        <!-- INFORMASI SIMULASI -->
         <div class="demo-info">
 
             <span>
@@ -874,6 +1070,8 @@
                     Sistem saat ini belum terhubung ke ESP32.
                     Data sensor, pompa, jadwal dan log
                     masih dijalankan melalui simulasi browser.
+                    Integrasi perangkat fisik akan dilakukan
+                    pada tahap berikutnya.
                 </p>
 
             </div>
@@ -881,7 +1079,6 @@
         </div>
 
     </main>
-
 
 
     <footer>

@@ -1,1797 +1,809 @@
-/* =========================================================
-   SMART WATERING
-   SCRIPT.JS
-   ========================================================= */
+/* SMART WATERING - SCRIPT.JS */
 
-
-/* =========================================================
-   GLOBAL STATE
-   ========================================================= */
-
-let currentLanguage =
-    localStorage.getItem("smartWateringLanguage") || "id";
-
-let currentTheme =
-    localStorage.getItem("smartWateringTheme") || "light";
-
+/* GLOBAL STATE */
+let currentLanguage = localStorage.getItem("smartWateringLanguage") || "id";
+let currentTheme = localStorage.getItem("smartWateringTheme") || "light";
 let currentMode = "auto";
-
 let pumpStatus = false;
-
+let fanStatus = false;
 let moisture = 68;
-
+let temperature = 30;
 let moistureHistory = [];
 
-let schedules =
-    JSON.parse(
-        localStorage.getItem("smartWateringSchedules") || "[]"
-    );
+let moistureThreshold = Number(
+  localStorage.getItem("smartWateringMoistureThreshold") || 40
+);
 
-let logs =
-    JSON.parse(
-        localStorage.getItem("smartWateringLogs") || "[]"
-    );
+let temperatureThreshold = Number(
+  localStorage.getItem("smartWateringTemperatureThreshold") || 36
+);
 
+let schedules = JSON.parse(
+  localStorage.getItem("smartWateringSchedules") || "[]"
+);
 
-/* =========================================================
-   TRANSLATION
-   ========================================================= */
+let logs = JSON.parse(
+  localStorage.getItem("smartWateringLogs") || "[]"
+);
 
+/* TRANSLATION */
 const translations = {
-
-    id: {
-
-        title:
-            "Smart Watering",
-
-        subtitle:
-            "Monitoring & Kontrol Penyiraman Tanaman",
-
-        simulation:
-            "Simulasi",
-
-        soilSensor:
-            "SENSOR TANAH",
-
-        soilMoisture:
-            "Kelembapan Tanah",
-
-        moisture:
-            "Kelembapan",
-
-        soilGood:
-            "Tanah Cukup Lembap",
-
-        soilDry:
-            "Tanah Kering",
-
-        soilVeryDry:
-            "Tanah Sangat Kering",
-
-        sensorUpdate:
-            "Data sensor diperbarui secara berkala dalam mode simulasi.",
-
-        actuator:
-            "AKTUATOR",
-
-        pumpStatus:
-            "Status Pompa",
-
-        pumpOff:
-            "Pompa Mati",
-
-        pumpOn:
-            "Pompa Menyala",
-
-        notWatering:
-            "Tidak sedang menyiram",
-
-        watering:
-            "Sedang menyiram tanaman",
-
-        turnOn:
-            "Nyalakan",
-
-        turnOff:
-            "Matikan",
-
-        sensorData:
-            "DATA SENSOR",
-
-        moistureChart:
-            "Grafik Kelembapan",
-
-        chartDescription:
-            "Perubahan kelembapan tanah secara real-time.",
-
-        soilMoistureLegend:
-            "● Kelembapan tanah",
-
-        current:
-            "Saat ini",
-
-        systemSettings:
-            "PENGATURAN SISTEM",
-
-        wateringMode:
-            "Mode Penyiraman",
-
-        modeDescription:
-            "Pilih bagaimana pompa dikendalikan.",
-
-        mode:
-            "Mode:",
-
-        automatic:
-            "Otomatis",
-
-        automaticDesc:
-            "Pompa dikendalikan berdasarkan kelembapan tanah.",
-
-        manual:
-            "Manual",
-
-        manualDesc:
-            "Pompa dikendalikan menggunakan tombol.",
-
-        scheduled:
-            "Terjadwal",
-
-        scheduledDesc:
-            "Pompa mengikuti jadwal yang telah dibuat.",
-
-        automaticDescription:
-            "🤖 Sistem akan mengatur pompa berdasarkan kondisi kelembapan tanah.",
-
-        manualDescription:
-            "👆 Pompa dapat dikendalikan secara langsung menggunakan tombol.",
-
-        scheduledDescription:
-            "⏰ Pompa akan mengikuti jadwal penyiraman yang telah dibuat.",
-
-        timeAutomation:
-            "AUTOMASI WAKTU",
-
-        pumpScheduling:
-            "Penjadwalan Pompa",
-
-        scheduleDescription:
-            "Atur waktu pompa menyala dan mati.",
-
-        pumpOn:
-            "Pompa ON",
-
-        pumpOff:
-            "Pompa OFF",
-
-        addSchedule:
-            "Tambah Jadwal",
-
-        activityHistory:
-            "RIWAYAT AKTIVITAS",
-
-        pumpLog:
-            "Log Pompa",
-
-        logDescription:
-            "Catatan waktu pompa menyala dan mati.",
-
-        clearLog:
-            "Hapus Log",
-
-        monitoring:
-            "MONITORING",
-
-        systemStatus:
-            "Status Sistem",
-
-        active:
-            "Aktif",
-
-        pump:
-            "Pompa",
-
-        off:
-            "Mati",
-
-        on:
-            "Menyala",
-
-        simulationMode:
-            "Mode Simulasi",
-
-        simulationInfo:
-            "Sistem saat ini belum terhubung ke ESP32. Data sensor, pompa, jadwal dan log masih dijalankan melalui simulasi browser.",
-
-        scheduleAdded:
-            "Jadwal berhasil ditambahkan.",
-
-        scheduleDeleted:
-            "Jadwal dihapus.",
-
-        logsCleared:
-            "Semua log pompa telah dihapus.",
-
-        confirmClear:
-            "Hapus semua log pompa?",
-
-        noSchedule:
-            "Belum ada jadwal.",
-
-        noLog:
-            "Belum ada aktivitas pompa.",
-
-        schedule:
-            "Jadwal",
-
-        pumpTurnedOn:
-            "Pompa dinyalakan",
-
-        pumpTurnedOff:
-            "Pompa dimatikan",
-
-        dark:
-            "Dark",
-
-        light:
-            "Light"
-
-    },
-
-
-    en: {
-
-        title:
-            "Smart Watering",
-
-        subtitle:
-            "Plant Watering Monitoring & Control",
-
-        simulation:
-            "Simulation",
-
-        soilSensor:
-            "SOIL SENSOR",
-
-        soilMoisture:
-            "Soil Moisture",
-
-        moisture:
-            "Moisture",
-
-        soilGood:
-            "Soil Moisture is Good",
-
-        soilDry:
-            "Soil is Dry",
-
-        soilVeryDry:
-            "Soil is Very Dry",
-
-        sensorUpdate:
-            "Sensor data is periodically updated in simulation mode.",
-
-        actuator:
-            "ACTUATOR",
-
-        pumpStatus:
-            "Pump Status",
-
-        pumpOff:
-            "Pump OFF",
-
-        pumpOn:
-            "Pump ON",
-
-        notWatering:
-            "Not watering",
-
-        watering:
-            "Currently watering",
-
-        turnOn:
-            "Turn ON",
-
-        turnOff:
-            "Turn OFF",
-
-        sensorData:
-            "SENSOR DATA",
-
-        moistureChart:
-            "Moisture Chart",
-
-        chartDescription:
-            "Real-time soil moisture changes.",
-
-        soilMoistureLegend:
-            "● Soil moisture",
-
-        current:
-            "Current",
-
-        systemSettings:
-            "SYSTEM SETTINGS",
-
-        wateringMode:
-            "Watering Mode",
-
-        modeDescription:
-            "Choose how the pump is controlled.",
-
-        mode:
-            "Mode:",
-
-        automatic:
-            "Automatic",
-
-        automaticDesc:
-            "Pump is controlled based on soil moisture.",
-
-        manual:
-            "Manual",
-
-        manualDesc:
-            "Pump is controlled using buttons.",
-
-        scheduled:
-            "Scheduled",
-
-        scheduledDesc:
-            "Pump follows the configured schedule.",
-
-        automaticDescription:
-            "🤖 The system controls the pump based on soil moisture.",
-
-        manualDescription:
-            "👆 The pump can be controlled directly using the buttons.",
-
-        scheduledDescription:
-            "⏰ The pump follows the configured watering schedule.",
-
-        timeAutomation:
-            "TIME AUTOMATION",
-
-        pumpScheduling:
-            "Pump Scheduling",
-
-        scheduleDescription:
-            "Set the time when the pump turns on and off.",
-
-        pumpOn:
-            "Pump ON",
-
-        pumpOff:
-            "Pump OFF",
-
-        addSchedule:
-            "Add Schedule",
-
-        activityHistory:
-            "ACTIVITY HISTORY",
-
-        pumpLog:
-            "Pump Log",
-
-        logDescription:
-            "Record of pump ON and OFF activity.",
-
-        clearLog:
-            "Clear Log",
-
-        monitoring:
-            "MONITORING",
-
-        systemStatus:
-            "System Status",
-
-        active:
-            "Active",
-
-        pump:
-            "Pump",
-
-        off:
-            "OFF",
-
-        on:
-            "ON",
-
-        simulationMode:
-            "Simulation Mode",
-
-        simulationInfo:
-            "The system is currently not connected to an ESP32. Sensor, pump, schedule and log data are running through browser simulation.",
-
-        scheduleAdded:
-            "Schedule successfully added.",
-
-        scheduleDeleted:
-            "Schedule deleted.",
-
-        logsCleared:
-            "All pump logs have been deleted.",
-
-        confirmClear:
-            "Delete all pump logs?",
-
-        noSchedule:
-            "No schedules yet.",
-
-        noLog:
-            "No pump activity yet.",
-
-        schedule:
-            "Schedule",
-
-        pumpTurnedOn:
-            "Pump turned ON",
-
-        pumpTurnedOff:
-            "Pump turned OFF",
-
-        dark:
-            "Dark",
-
-        light:
-            "Light"
-
-    }
-
+  id: {
+    title: "Smart Watering",
+    subtitle: "Monitoring & Kontrol Penyiraman Tanaman",
+    simulation: "Simulasi",
+    soilSensor: "SENSOR TANAH",
+    soilMoisture: "Kelembapan Tanah",
+    moisture: "Kelembapan",
+    soilGood: "Tanah Cukup Lembap",
+    soilDry: "Tanah Kering",
+    soilVeryDry: "Tanah Sangat Kering",
+    sensorUpdate: "Data sensor diperbarui secara berkala dalam mode simulasi.",
+    actuator: "AKTUATOR",
+    pumpStatus: "Status Pompa",
+    pumpOff: "Pompa Mati",
+    pumpOn: "Pompa Menyala",
+    notWatering: "Tidak sedang menyiram",
+    watering: "Sedang menyiram tanaman",
+    turnOn: "Nyalakan",
+    turnOff: "Matikan",
+    sensorData: "DATA SENSOR",
+    moistureChart: "Grafik Kelembapan",
+    chartDescription: "Perubahan kelembapan tanah secara real-time.",
+    soilMoistureLegend: "● Kelembapan tanah",
+    current: "Saat ini",
+    systemSettings: "PENGATURAN SISTEM",
+    wateringMode: "Mode Penyiraman",
+    modeDescription: "Pilih bagaimana pompa dikendalikan.",
+    mode: "Mode:",
+    automatic: "Otomatis",
+    automaticDesc: "Pompa dikendalikan berdasarkan kelembapan tanah.",
+    manual: "Manual",
+    manualDesc: "Pompa dikendalikan menggunakan tombol.",
+    scheduled: "Terjadwal",
+    scheduledDesc: "Pompa mengikuti jadwal yang telah dibuat.",
+    automaticDescription: "🤖 Sistem mengatur pompa berdasarkan kelembapan tanah.",
+    manualDescription: "👆 Pompa dikendalikan langsung menggunakan tombol.",
+    scheduledDescription: "⏰ Pompa mengikuti jadwal penyiraman yang telah dibuat.",
+    timeAutomation: "AUTOMASI WAKTU",
+    pumpScheduling: "Penjadwalan Pompa",
+    scheduleDescription: "Atur waktu pompa menyala dan mati.",
+    pumpOn: "Pompa ON",
+    pumpOff: "Pompa OFF",
+    addSchedule: "Tambah Jadwal",
+    activityHistory: "RIWAYAT AKTIVITAS",
+    pumpLog: "Log Pompa",
+    logDescription: "Catatan waktu pompa menyala dan mati.",
+    clearLog: "Hapus Log",
+    monitoring: "MONITORING",
+    systemStatus: "Status Sistem",
+    active: "Aktif",
+    pump: "Pompa",
+    off: "Mati",
+    on: "Menyala",
+    simulationMode: "Mode Simulasi",
+    simulationInfo: "Sistem belum terhubung ke ESP32. Data sensor, pompa, kipas, jadwal, dan log masih dijalankan melalui simulasi browser. Integrasi perangkat fisik dilakukan pada tahap berikutnya.",
+    scheduleAdded: "Jadwal berhasil ditambahkan.",
+    scheduleDeleted: "Jadwal dihapus.",
+    logsCleared: "Semua log pompa telah dihapus.",
+    confirmClear: "Hapus semua log pompa?",
+    noSchedule: "Belum ada jadwal.",
+    noLog: "Belum ada aktivitas pompa.",
+    schedule: "Jadwal",
+    pumpTurnedOn: "Pompa dinyalakan",
+    pumpTurnedOff: "Pompa dimatikan",
+    dark: "Dark",
+    light: "Light",
+    temperature: "Suhu Lingkungan",
+    waitingTemperature: "Menunggu data suhu",
+    temperatureNormal: "Suhu Normal",
+    temperatureHigh: "Suhu Tinggi",
+    fan: "Kipas",
+    fanOn: "Kipas Menyala",
+    fanOff: "Kipas Mati",
+    fanActive: "Kipas sedang aktif",
+    fanInactive: "Kipas tidak aktif",
+    moistureThreshold: "Batas Kelembapan Tanah",
+    temperatureThreshold: "Batas Suhu",
+    thresholdSettings: "Ambang Batas Sensor",
+    thresholdDescription: "Atur nilai batas untuk mengendalikan pompa dan kipas secara otomatis.",
+    moistureThresholdHelp: "Pompa menyala jika kelembapan tanah di bawah nilai ini.",
+    temperatureThresholdHelp: "Kipas menyala jika suhu melebihi nilai ini.",
+    saveSettings: "Simpan Pengaturan",
+    settingsSaved: "Pengaturan berhasil disimpan.",
+    invalidThreshold: "Masukkan nilai ambang yang valid.",
+    dhtStatus: "Sensor DHT11",
+    automaticFan: "Kipas dikendalikan otomatis berdasarkan suhu."
+  },
+
+  en: {
+    title: "Smart Watering",
+    subtitle: "Plant Watering Monitoring & Control",
+    simulation: "Simulation",
+    soilSensor: "SOIL SENSOR",
+    soilMoisture: "Soil Moisture",
+    moisture: "Moisture",
+    soilGood: "Soil Moisture is Good",
+    soilDry: "Soil is Dry",
+    soilVeryDry: "Soil is Very Dry",
+    sensorUpdate: "Sensor data is periodically updated in simulation mode.",
+    actuator: "ACTUATOR",
+    pumpStatus: "Pump Status",
+    pumpOff: "Pump OFF",
+    pumpOn: "Pump ON",
+    notWatering: "Not watering",
+    watering: "Currently watering",
+    turnOn: "Turn ON",
+    turnOff: "Turn OFF",
+    sensorData: "SENSOR DATA",
+    moistureChart: "Moisture Chart",
+    chartDescription: "Real-time soil moisture changes.",
+    soilMoistureLegend: "● Soil moisture",
+    current: "Current",
+    systemSettings: "SYSTEM SETTINGS",
+    wateringMode: "Watering Mode",
+    modeDescription: "Choose how the pump is controlled.",
+    mode: "Mode:",
+    automatic: "Automatic",
+    automaticDesc: "Pump is controlled based on soil moisture.",
+    manual: "Manual",
+    manualDesc: "Pump is controlled using buttons.",
+    scheduled: "Scheduled",
+    scheduledDesc: "Pump follows the configured schedule.",
+    automaticDescription: "🤖 The system controls the pump based on soil moisture.",
+    manualDescription: "👆 The pump can be controlled directly using buttons.",
+    scheduledDescription: "⏰ The pump follows the configured watering schedule.",
+    timeAutomation: "TIME AUTOMATION",
+    pumpScheduling: "Pump Scheduling",
+    scheduleDescription: "Set the time when the pump turns on and off.",
+    pumpOn: "Pump ON",
+    pumpOff: "Pump OFF",
+    addSchedule: "Add Schedule",
+    activityHistory: "ACTIVITY HISTORY",
+    pumpLog: "Pump Log",
+    logDescription: "Record of pump ON and OFF activity.",
+    clearLog: "Clear Log",
+    monitoring: "MONITORING",
+    systemStatus: "System Status",
+    active: "Active",
+    pump: "Pump",
+    off: "OFF",
+    on: "ON",
+    simulationMode: "Simulation Mode",
+    simulationInfo: "The system is not connected to an ESP32. Sensor, pump, fan, schedule, and log data are running through browser simulation. Physical device integration will be done in the next stage.",
+    scheduleAdded: "Schedule successfully added.",
+    scheduleDeleted: "Schedule deleted.",
+    logsCleared: "All pump logs have been deleted.",
+    confirmClear: "Delete all pump logs?",
+    noSchedule: "No schedules yet.",
+    noLog: "No pump activity yet.",
+    schedule: "Schedule",
+    pumpTurnedOn: "Pump turned ON",
+    pumpTurnedOff: "Pump turned OFF",
+    dark: "Dark",
+    light: "Light",
+    temperature: "Ambient Temperature",
+    waitingTemperature: "Waiting for temperature data",
+    temperatureNormal: "Normal Temperature",
+    temperatureHigh: "High Temperature",
+    fan: "Fan",
+    fanOn: "Fan ON",
+    fanOff: "Fan OFF",
+    fanActive: "Fan is active",
+    fanInactive: "Fan is inactive",
+    moistureThreshold: "Soil Moisture Threshold",
+    temperatureThreshold: "Temperature Threshold",
+    thresholdSettings: "Sensor Thresholds",
+    thresholdDescription: "Set thresholds to automatically control the pump and fan.",
+    moistureThresholdHelp: "The pump turns on when soil moisture falls below this value.",
+    temperatureThresholdHelp: "The fan turns on when temperature exceeds this value.",
+    saveSettings: "Save Settings",
+    settingsSaved: "Settings successfully saved.",
+    invalidThreshold: "Enter valid threshold values.",
+    dhtStatus: "DHT11 Sensor",
+    automaticFan: "The fan is automatically controlled based on temperature."
+  }
 };
 
-
-/* =========================================================
-   TRANSLATION HELPER
-   ========================================================= */
-
 function t(key) {
-
-    return (
-        translations[currentLanguage][key] ||
-        key
-    );
-
+  return translations[currentLanguage]?.[key] || key;
 }
 
-
-/* =========================================================
-   LANGUAGE
-   ========================================================= */
-
+/* LANGUAGE */
 function setLanguage(language) {
-
-    if (
-        language !== "id" &&
-        language !== "en"
-    ) {
-        return;
-    }
-
-    currentLanguage = language;
-
-    localStorage.setItem(
-        "smartWateringLanguage",
-        currentLanguage
-    );
-
-    applyTranslations();
-
+  if (!["id", "en"].includes(language)) return;
+  currentLanguage = language;
+  localStorage.setItem("smartWateringLanguage", currentLanguage);
+  applyTranslations();
 }
-
-
-/* =========================================================
-   APPLY TRANSLATIONS
-   ========================================================= */
 
 function applyTranslations() {
+  document.querySelectorAll("[data-i18n]").forEach(element => {
+    element.textContent = t(element.getAttribute("data-i18n"));
+  });
 
-    document
-        .querySelectorAll("[data-i18n]")
-        .forEach(element => {
+  const langID = document.getElementById("langID");
+  const langEN = document.getElementById("langEN");
 
-            const key =
-                element.getAttribute("data-i18n");
+  if (langID) langID.classList.toggle("active", currentLanguage === "id");
+  if (langEN) langEN.classList.toggle("active", currentLanguage === "en");
 
-            element.textContent =
-                t(key);
-
-        });
-
-
-    const langID =
-        document.getElementById("langID");
-
-    const langEN =
-        document.getElementById("langEN");
-
-
-    if (langID) {
-
-        langID.classList.toggle(
-            "active",
-            currentLanguage === "id"
-        );
-
-    }
-
-
-    if (langEN) {
-
-        langEN.classList.toggle(
-            "active",
-            currentLanguage === "en"
-        );
-
-    }
-
-
-    updateThemeButton();
-
-    updateMoistureUI();
-
-    updatePumpUI();
-
-    updateModeUI();
-
-    updateChartText();
-
-    renderSchedules();
-
-    renderLogs();
-
+  updateThemeButton();
+  updateMoistureUI();
+  updateTemperatureUI();
+  updatePumpUI();
+  updateFanUI();
+  updateModeUI();
+  updateChartText();
+  updateThresholdInputs();
+  renderSchedules();
+  renderLogs();
 }
 
-
-/* =========================================================
-   DARK / LIGHT MODE
-   ========================================================= */
-
+/* THEME */
 function toggleTheme() {
-
-    currentTheme =
-        currentTheme === "light"
-            ? "dark"
-            : "light";
-
-
-    localStorage.setItem(
-        "smartWateringTheme",
-        currentTheme
-    );
-
-
-    applyTheme();
-
+  currentTheme = currentTheme === "light" ? "dark" : "light";
+  localStorage.setItem("smartWateringTheme", currentTheme);
+  applyTheme();
 }
-
 
 function applyTheme() {
-
-    document.documentElement
-        .setAttribute(
-            "data-theme",
-            currentTheme === "dark"
-                ? "dark"
-                : "light"
-        );
-
-
-    updateThemeButton();
-
+  document.documentElement.setAttribute(
+    "data-theme",
+    currentTheme === "dark" ? "dark" : "light"
+  );
+  updateThemeButton();
 }
-
 
 function updateThemeButton() {
+  const button = document.getElementById("themeButton");
+  if (!button) return;
 
-    const button =
-        document.getElementById("themeButton");
-
-
-    if (!button) {
-        return;
-    }
-
-
-    if (currentTheme === "dark") {
-
-        button.textContent = "☀️";
-
-        button.title =
-            t("light");
-
-    } else {
-
-        button.textContent = "🌙";
-
-        button.title =
-            t("dark");
-
-    }
-
+  button.textContent = currentTheme === "dark" ? "☀️" : "🌙";
+  button.title = currentTheme === "dark" ? t("light") : t("dark");
 }
 
+/* THRESHOLD SETTINGS */
+function updateThresholdInputs() {
+  const moistureInput = document.getElementById("moistureThreshold");
+  const temperatureInput = document.getElementById("temperatureThreshold");
 
-/* =========================================================
-   MOISTURE SIMULATION
-   ========================================================= */
+  if (moistureInput) moistureInput.value = moistureThreshold;
+  if (temperatureInput) temperatureInput.value = temperatureThreshold;
+}
 
+function saveThresholds() {
+  const moistureInput = document.getElementById("moistureThreshold");
+  const temperatureInput = document.getElementById("temperatureThreshold");
+
+  if (!moistureInput || !temperatureInput) return;
+
+  const m = moistureInput.value.trim();
+  const temp = temperatureInput.value.trim();
+
+  const newM = Number(m);
+  const newT = Number(temp);
+
+  if (
+    m === "" ||
+    temp === "" ||
+    !Number.isFinite(newM) ||
+    !Number.isFinite(newT) ||
+    newM < 0 ||
+    newM > 100 ||
+    newT < 0 ||
+    newT > 80
+  ) {
+    alert(t("invalidThreshold"));
+    updateThresholdInputs();
+    return;
+  }
+
+  moistureThreshold = newM;
+  temperatureThreshold = newT;
+
+  localStorage.setItem("smartWateringMoistureThreshold", moistureThreshold);
+  localStorage.setItem("smartWateringTemperatureThreshold", temperatureThreshold);
+
+  automaticControl();
+  automaticFanControl();
+  updateMoistureUI();
+  updateTemperatureUI();
+
+  const message = document.getElementById("thresholdMessage");
+  if (message) message.textContent = t("settingsSaved");
+}
+
+/* SENSOR SIMULATION */
 function simulateMoisture() {
+  moisture += Math.floor(Math.random() * 9) - 4;
 
-    let change =
-        Math.floor(
-            Math.random() * 9
-        ) - 4;
+  if (pumpStatus) {
+    moisture += Math.floor(Math.random() * 4) + 1;
+  } else {
+    moisture -= Math.floor(Math.random() * 2);
+  }
 
+  moisture = Math.max(0, Math.min(100, moisture));
 
-    moisture += change;
+  moistureHistory.push(moisture);
 
+  if (moistureHistory.length > 30) {
+    moistureHistory.shift();
+  }
 
-    /*
-       Jika pompa menyala,
-       kelembapan cenderung naik.
-    */
-
-    if (pumpStatus) {
-
-        moisture +=
-            Math.floor(
-                Math.random() * 4
-            ) + 1;
-
-    } else {
-
-        /*
-           Jika pompa mati,
-           kelembapan perlahan turun.
-        */
-
-        moisture -=
-            Math.floor(
-                Math.random() * 2
-            );
-
-    }
-
-
-    moisture =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                moisture
-            )
-        );
-
-
-    /*
-       Simpan histori grafik
-    */
-
-    moistureHistory.push(moisture);
-
-
-    if (
-        moistureHistory.length > 30
-    ) {
-
-        moistureHistory.shift();
-
-    }
-
-
-    updateMoistureUI();
-
-    updateChart();
-
-    automaticControl();
-
+  updateMoistureUI();
+  updateChart();
+  automaticControl();
 }
 
+function simulateTemperature() {
+  temperature += Math.random() * 2 - 1;
+  temperature = Math.max(20, Math.min(45, temperature));
+  temperature = Number(temperature.toFixed(1));
 
-/* =========================================================
-   MOISTURE UI
-   ========================================================= */
+  automaticFanControl();
+  updateTemperatureUI();
+}
 
+/* MOISTURE DISPLAY */
 function updateMoistureUI() {
+  const value = document.getElementById("moisture");
+  if (value) value.textContent = Math.round(moisture);
 
-    const moistureElement =
-        document.getElementById("moisture");
+  const gauge = document.getElementById("moistureGauge");
 
+  if (gauge) {
+    gauge.style.background =
+      `conic-gradient(${getMoistureColor()} ${moisture}%, var(--primary-light) 0)`;
+  }
 
-    if (moistureElement) {
+  const condition = document.getElementById("condition");
+  if (!condition) return;
 
-        moistureElement.textContent =
-            Math.round(moisture);
+  let text;
+  let className;
 
-    }
+  if (moisture < 20) {
+    text = t("soilVeryDry");
+    className = "condition danger";
+  } else if (moisture < moistureThreshold) {
+    text = t("soilDry");
+    className = "condition warning";
+  } else {
+    text = t("soilGood");
+    className = "condition good";
+  }
 
+  condition.className = className;
+  condition.innerHTML = `<span>●</span><span>${text}</span>`;
 
-    const gauge =
-        document.getElementById(
-            "moistureGauge"
-        );
-
-
-    if (gauge) {
-
-        gauge.style.background =
-            `conic-gradient(
-                ${getMoistureColor()} ${moisture}%,
-                var(--primary-light) 0
-            )`;
-
-    }
-
-
-    const condition =
-        document.getElementById(
-            "condition"
-        );
-
-
-    if (!condition) {
-        return;
-    }
-
-
-    let text;
-    let className;
-
-
-    if (moisture < 20) {
-
-        text = t("soilVeryDry");
-
-        className =
-            "condition danger";
-
-    } else if (moisture < 40) {
-
-        text = t("soilDry");
-
-        className =
-            "condition warning";
-
-    } else {
-
-        text = t("soilGood");
-
-        className =
-            "condition good";
-
-    }
-
-
-    condition.className =
-        className;
-
-
-    condition.innerHTML =
-        `<span>●</span>
-         <span>${text}</span>`;
-
-
-    updateChartText();
-
+  updateChartText();
 }
-
-
-/* =========================================================
-   MOISTURE COLOR
-   ========================================================= */
 
 function getMoistureColor() {
-
-    if (moisture < 20) {
-
-        return "var(--danger)";
-
-    }
-
-
-    if (moisture < 40) {
-
-        return "var(--warning)";
-
-    }
-
-
-    return "var(--primary)";
-
+  if (moisture < 20) return "var(--danger)";
+  if (moisture < moistureThreshold) return "var(--warning)";
+  return "var(--primary)";
 }
 
+/* TEMPERATURE DISPLAY */
+function updateTemperatureUI() {
+  const value = document.getElementById("temperature");
+  if (value) value.textContent = temperature.toFixed(1);
 
-/* =========================================================
-   AUTOMATIC CONTROL
-   ========================================================= */
+  const condition = document.getElementById("temperatureCondition");
 
+  if (condition) {
+    const high = temperature > temperatureThreshold;
+
+    condition.className = high
+      ? "condition warning"
+      : "condition good";
+
+    condition.innerHTML = `<span>●</span><span>${
+      high ? t("temperatureHigh") : t("temperatureNormal")
+    }</span>`;
+  }
+
+  const dhtStatus = document.getElementById("systemDhtStatus");
+
+  if (dhtStatus) {
+    dhtStatus.className = "online";
+    dhtStatus.textContent = "● " + t("active");
+  }
+}
+
+/* AUTOMATIC ACTUATOR CONTROL */
 function automaticControl() {
+  if (currentMode !== "auto") return;
 
-    if (currentMode !== "auto") {
-        return;
-    }
-
-
-    /*
-       Jika kelembapan di bawah 40%,
-       pompa otomatis menyala.
-
-       Jika sudah >= 40%,
-       pompa mati.
-    */
-
-    if (
-        moisture < 40 &&
-        !pumpStatus
-    ) {
-
-        setPumpState(
-            true,
-            false
-        );
-
-    }
-
-
-    if (
-        moisture >= 40 &&
-        pumpStatus
-    ) {
-
-        setPumpState(
-            false,
-            false
-        );
-
-    }
-
+  if (moisture < moistureThreshold && !pumpStatus) {
+    setPumpState(true, false);
+  } else if (moisture >= moistureThreshold && pumpStatus) {
+    setPumpState(false, false);
+  }
 }
 
+function automaticFanControl() {
+  setFanState(temperature > temperatureThreshold);
+}
 
-/* =========================================================
-   PUMP CONTROL
-   ========================================================= */
-
+/* PUMP */
 function pumpControl(action) {
+  if (currentMode === "auto") {
+    alert(
+      currentLanguage === "id"
+        ? "Pompa dikendalikan otomatis berdasarkan kelembapan tanah."
+        : "The pump is automatically controlled based on soil moisture."
+    );
+    return;
+  }
 
-    /*
-       Mode otomatis:
-       tombol manual tidak digunakan.
-    */
-
-    if (currentMode === "auto") {
-
-        alert(
-            currentLanguage === "id"
-                ? "Pompa dikendalikan otomatis berdasarkan kelembapan tanah."
-                : "The pump is automatically controlled based on soil moisture."
-        );
-
-        return;
-
-    }
-
-
-    if (action === "on") {
-
-        setPumpState(
-            true,
-            true
-        );
-
-    }
-
-
-    if (action === "off") {
-
-        setPumpState(
-            false,
-            true
-        );
-
-    }
-
+  if (action === "on") setPumpState(true, true);
+  if (action === "off") setPumpState(false, true);
 }
 
+function setPumpState(state, createLog = true) {
+  const previous = pumpStatus;
+  pumpStatus = state;
 
-/* =========================================================
-   SET PUMP STATE
-   ========================================================= */
+  updatePumpUI();
 
-function setPumpState(
-    state,
-    createLog = true
-) {
-
-    const previousState =
-        pumpStatus;
-
-
-    pumpStatus =
-        state;
-
-
-    updatePumpUI();
-
-
-    if (
-        createLog &&
-        previousState !== state
-    ) {
-
-        addLog(
-            state
-                ? t("pumpTurnedOn")
-                : t("pumpTurnedOff")
-        );
-
-    }
-
+  if (createLog && previous !== state) {
+    addLog(state ? t("pumpTurnedOn") : t("pumpTurnedOff"));
+  }
 }
-
-
-/* =========================================================
-   PUMP UI
-   ========================================================= */
 
 function updatePumpUI() {
+  const status = document.getElementById("pumpStatus");
+  const systemStatus = document.getElementById("systemPumpStatus");
 
-    const status =
-        document.getElementById(
-            "pumpStatus"
-        );
+  if (status) {
+    status.className = pumpStatus
+      ? "pump-status on"
+      : "pump-status off";
 
+    status.innerHTML = pumpStatus
+      ? `<div class="pump-status-icon">🟢</div>
+         <div><strong>${t("pumpOn")}</strong>
+         <span>${t("watering")}</span></div>`
+      : `<div class="pump-status-icon">🔴</div>
+         <div><strong>${t("pumpOff")}</strong>
+         <span>${t("notWatering")}</span></div>`;
+  }
 
-    const systemStatus =
-        document.getElementById(
-            "systemPumpStatus"
-        );
-
-
-    if (status) {
-
-        if (pumpStatus) {
-
-            status.className =
-                "pump-status on";
-
-
-            status.innerHTML = `
-
-                <div class="pump-status-icon">
-                    🟢
-                </div>
-
-                <div>
-
-                    <strong>
-                        ${t("pumpOn")}
-                    </strong>
-
-                    <span>
-                        ${t("watering")}
-                    </span>
-
-                </div>
-
-            `;
-
-        } else {
-
-            status.className =
-                "pump-status off";
-
-
-            status.innerHTML = `
-
-                <div class="pump-status-icon">
-                    🔴
-                </div>
-
-                <div>
-
-                    <strong>
-                        ${t("pumpOff")}
-                    </strong>
-
-                    <span>
-                        ${t("notWatering")}
-                    </span>
-
-                </div>
-
-            `;
-
-        }
-
-    }
-
-
-    if (systemStatus) {
-
-        systemStatus.className =
-            pumpStatus
-                ? "online"
-                : "offline";
-
-
-        systemStatus.innerHTML =
-            pumpStatus
-                ? `● ${t("on")}`
-                : `● ${t("off")}`;
-
-    }
-
+  if (systemStatus) {
+    systemStatus.className = pumpStatus ? "online" : "offline";
+    systemStatus.innerHTML = pumpStatus
+      ? `● ${t("on")}`
+      : `● ${t("off")}`;
+  }
 }
 
+/* FAN */
+function setFanState(state) {
+  fanStatus = state;
+  updateFanUI();
+}
 
-/* =========================================================
-   MODE
-   ========================================================= */
+function updateFanUI() {
+  const status = document.getElementById("fanStatus");
+  const systemStatus = document.getElementById("systemFanStatus");
 
+  if (status) {
+    status.className = fanStatus
+      ? "pump-status on"
+      : "pump-status off";
+
+    status.innerHTML = fanStatus
+      ? `<div class="pump-status-icon">🟢</div>
+         <div><strong>${t("fanOn")}</strong>
+         <span>${t("fanActive")}</span></div>`
+      : `<div class="pump-status-icon">🔴</div>
+         <div><strong>${t("fanOff")}</strong>
+         <span>${t("fanInactive")}</span></div>`;
+  }
+
+  if (systemStatus) {
+    systemStatus.className = fanStatus ? "online" : "offline";
+    systemStatus.textContent = fanStatus
+      ? "● " + t("on")
+      : "● " + t("off");
+  }
+}
+
+/* OPERATING MODE */
 function setMode(mode) {
+  if (!["auto", "manual", "schedule"].includes(mode)) return;
 
-    if (
-        mode !== "auto" &&
-        mode !== "manual" &&
-        mode !== "schedule"
-    ) {
+  currentMode = mode;
+  updateModeUI();
 
-        return;
-
-    }
-
-
-    currentMode =
-        mode;
-
-
-    /*
-       Jika mode berubah ke AUTO,
-       langsung jalankan kontrol otomatis.
-    */
-
-    if (currentMode === "auto") {
-
-        automaticControl();
-
-    }
-
-
-    updateModeUI();
-
+  if (currentMode === "auto") {
+    automaticControl();
+  } else if (currentMode === "schedule") {
+    checkSchedules();
+  }
 }
-
-
-/* =========================================================
-   MODE UI
-   ========================================================= */
 
 function updateModeUI() {
-
-    const autoButton =
-        document.getElementById(
-            "autoButton"
-        );
-
-    const manualButton =
-        document.getElementById(
-            "manualButton"
-        );
-
-    const scheduleButton =
-        document.getElementById(
-            "scheduleButton"
-        );
-
-
-    if (autoButton) {
-
-        autoButton.classList.toggle(
-            "active",
-            currentMode === "auto"
-        );
-
-    }
-
-
-    if (manualButton) {
-
-        manualButton.classList.toggle(
-            "active",
-            currentMode === "manual"
-        );
-
-    }
-
-
-    if (scheduleButton) {
-
-        scheduleButton.classList.toggle(
-            "active",
-            currentMode === "schedule"
-        );
-
-    }
-
-
-    const modeText =
-        document.getElementById(
-            "modeText"
-        );
-
-
-    if (modeText) {
-
-        if (currentMode === "auto") {
-
-            modeText.textContent =
-                currentLanguage === "id"
-                    ? "OTOMATIS"
-                    : "AUTOMATIC";
-
-        }
-
-        if (currentMode === "manual") {
-
-            modeText.textContent =
-                currentLanguage === "id"
-                    ? "MANUAL"
-                    : "MANUAL";
-
-        }
-
-        if (currentMode === "schedule") {
-
-            modeText.textContent =
-                currentLanguage === "id"
-                    ? "TERJADWAL"
-                    : "SCHEDULED";
-
-        }
-
-    }
-
-
-    const description =
-        document.getElementById(
-            "modeDescription"
-        );
-
-
-    if (!description) {
-        return;
-    }
-
-
-    if (currentMode === "auto") {
-
-        description.textContent =
-            t("automaticDescription");
-
-    }
-
-
-    if (currentMode === "manual") {
-
-        description.textContent =
-            t("manualDescription");
-
-    }
-
-
-    if (currentMode === "schedule") {
-
-        description.textContent =
-            t("scheduledDescription");
-
-    }
-
-}
-
-
-/* =========================================================
-   CHART
-   ========================================================= */
-
-function updateChart() {
-
-    const line =
-        document.getElementById(
-            "chartLine"
-        );
-
-
-    const area =
-        document.getElementById(
-            "chartArea"
-        );
-
-
-    if (
-        !line ||
-        !area ||
-        moistureHistory.length === 0
-    ) {
-
-        return;
-
-    }
-
-
-    const chartLeft = 50;
-    const chartRight = 780;
-
-    const chartTop = 20;
-    const chartBottom = 260;
-
-
-    const width =
-        chartRight - chartLeft;
-
-
-    const height =
-        chartBottom - chartTop;
-
-
-    const points =
-        moistureHistory.map(
-            (value, index) => {
-
-                let x;
-
-
-                if (
-                    moistureHistory.length === 1
-                ) {
-
-                    x = chartLeft;
-
-                } else {
-
-                    x =
-                        chartLeft +
-                        (
-                            index /
-                            (
-                                moistureHistory.length - 1
-                            )
-                        ) *
-                        width;
-
-                }
-
-
-                const y =
-                    chartBottom -
-                    (
-                        value / 100
-                    ) *
-                    height;
-
-
-                return `${x},${y}`;
-
-            }
-        );
-
-
-    line.setAttribute(
-        "points",
-        points.join(" ")
+  document.querySelectorAll(".mode-button").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.mode === currentMode
     );
+  });
 
-
-    const firstPoint =
-        points[0];
-
-
-    const lastPoint =
-        points[points.length - 1];
-
-
-    if (
-        firstPoint &&
-        lastPoint
-    ) {
-
-        const areaPoints =
-            `${firstPoint}
-             ${points.slice(1).join(" ")}
-             ${chartRight},${chartBottom}
-             ${chartLeft},${chartBottom}`;
-
-
-        area.setAttribute(
-            "points",
-            areaPoints
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CHART TEXT
-   ========================================================= */
-
-function updateChartText() {
-
-    const current =
-        document.getElementById(
-            "chartCurrent"
-        );
-
-
-    if (current) {
-
-        current.textContent =
-            `${t("current")}: ${Math.round(moisture)}%`;
-
-    }
-
-}
-
-
-/* =========================================================
-   SCHEDULE
-   ========================================================= */
-
-function addSchedule() {
-
-    const start =
-        document.getElementById(
-            "startTime"
-        ).value;
-
-
-    const end =
-        document.getElementById(
-            "endTime"
-        ).value;
-
-
-    if (!start || !end) {
-
-        alert(
-            currentLanguage === "id"
-                ? "Silakan isi waktu ON dan OFF."
-                : "Please enter the ON and OFF time."
-        );
-
-        return;
-
-    }
-
-
-    const schedule = {
-
-        id:
-            Date.now(),
-
-        start:
-            start,
-
-        end:
-            end
-
+  const description = document.getElementById("modeDescription");
+  if (description) {
+    const descriptions = {
+      auto: t("automaticDescription"),
+      manual: t("manualDescription"),
+      schedule: t("scheduledDescription")
     };
 
+    description.textContent = descriptions[currentMode];
+  }
 
-    schedules.push(
-        schedule
-    );
+  const onButton = document.getElementById("pumpOnButton");
+  const offButton = document.getElementById("pumpOffButton");
 
+  const manual = currentMode === "manual";
 
-    saveSchedules();
-
-    renderSchedules();
-
-
-    alert(
-        t("scheduleAdded")
-    );
-
+  if (onButton) onButton.disabled = !manual;
+  if (offButton) offButton.disabled = !manual;
 }
 
-
-/* =========================================================
-   SAVE SCHEDULE
-   ========================================================= */
-
-function saveSchedules() {
-
-    localStorage.setItem(
-        "smartWateringSchedules",
-        JSON.stringify(schedules)
-    );
-
+/* MOISTURE CHART */
+function updateChartText() {
+  const current = document.getElementById("chartCurrent");
+  if (current) {
+    current.textContent = `${Math.round(moisture)}%`;
+  }
 }
 
+function updateChart() {
+  const line = document.getElementById("chartLine");
+  const area = document.getElementById("chartArea");
 
-/* =========================================================
-   DELETE SCHEDULE
-   ========================================================= */
+  if (!line || !area) return;
+
+  if (moistureHistory.length < 2) {
+    moistureHistory.push(moisture);
+  }
+
+  const width = 600;
+  const height = 180;
+  const points = moistureHistory.map((value, index) => {
+    const x =
+      (index / Math.max(moistureHistory.length - 1, 1)) * width;
+    const y = height - (value / 100) * height;
+
+    return `${x},${y}`;
+  });
+
+  line.setAttribute("points", points.join(" "));
+
+  area.setAttribute(
+    "points",
+    `0,${height} ${points.join(" ")} ${width},${height}`
+  );
+
+  updateChartText();
+}
+
+/* SCHEDULES */
+function addSchedule(event) {
+  if (event) event.preventDefault();
+
+  const timeInput = document.getElementById("scheduleTime");
+  const actionInput = document.getElementById("scheduleAction");
+
+  if (!timeInput || !actionInput || !timeInput.value) return;
+
+  const schedule = {
+    id: Date.now(),
+    time: timeInput.value,
+    action: actionInput.value,
+    executedDate: ""
+  };
+
+  schedules.push(schedule);
+  saveSchedules();
+  renderSchedules();
+
+  timeInput.value = "";
+  addLog(t("scheduleAdded"));
+}
 
 function deleteSchedule(id) {
-
-    schedules =
-        schedules.filter(
-            schedule =>
-                schedule.id !== id
-        );
-
-
-    saveSchedules();
-
-    renderSchedules();
-
+  schedules = schedules.filter(schedule => schedule.id !== id);
+  saveSchedules();
+  renderSchedules();
+  addLog(t("scheduleDeleted"));
 }
 
-
-/* =========================================================
-   RENDER SCHEDULES
-   ========================================================= */
+function saveSchedules() {
+  localStorage.setItem(
+    "smartWateringSchedules",
+    JSON.stringify(schedules)
+  );
+}
 
 function renderSchedules() {
+  const container = document.getElementById("scheduleList");
+  if (!container) return;
 
-    const list =
-        document.getElementById(
-            "scheduleList"
-        );
+  if (schedules.length === 0) {
+    container.innerHTML = `<p>${t("noSchedule")}</p>`;
+    return;
+  }
 
-
-    if (!list) {
-        return;
-    }
-
-
-    if (schedules.length === 0) {
-
-        list.innerHTML = `
-
-            <div class="empty-log">
-                ${t("noSchedule")}
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    list.innerHTML =
-        schedules
-            .map(
-                schedule => `
-
-                <div class="schedule-item">
-
-                    <div>
-
-                        <div class="schedule-time">
-
-                            ${schedule.start}
-                            →
-                            ${schedule.end}
-
-                        </div>
-
-                        <div class="schedule-label">
-
-                            ${t("schedule")}
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        class="delete-schedule"
-                        onclick="deleteSchedule(${schedule.id})"
-                        title="${t("scheduleDeleted")}"
-                    >
-
-                        ×
-
-                    </button>
-
-                </div>
-
-            `
-            )
-            .join("");
-
+  container.innerHTML = schedules.map(schedule => `
+    <div class="schedule-item">
+      <div>
+        <strong>${schedule.time}</strong>
+        <span>${schedule.action.toUpperCase()}</span>
+      </div>
+      <button onclick="deleteSchedule(${schedule.id})" type="button">
+        ✕
+      </button>
+    </div>
+  `).join("");
 }
 
+function checkSchedules() {
+  if (currentMode !== "schedule") return;
 
-/* =========================================================
-   LOG
-   ========================================================= */
+  const now = new Date();
+  const currentTime = now.toTimeString().slice(0, 5);
+  const today = now.toISOString().slice(0, 10);
 
-function addLog(action) {
+  schedules.forEach(schedule => {
+    if (
+      schedule.time === currentTime &&
+      schedule.executedDate !== today
+    ) {
+      if (schedule.action === "on") {
+        setPumpState(true, true);
+      } else if (schedule.action === "off") {
+        setPumpState(false, true);
+      }
 
-    const now =
-        new Date();
-
-
-    const time =
-        now.toLocaleTimeString(
-            currentLanguage === "id"
-                ? "id-ID"
-                : "en-US",
-            {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit"
-            }
-        );
-
-
-    logs.unshift({
-
-        id:
-            Date.now(),
-
-        action:
-            action,
-
-        time:
-            time
-
-    });
-
-
-    /*
-       Simpan maksimal 30 log
-    */
-
-    logs =
-        logs.slice(
-            0,
-            30
-        );
-
-
-    localStorage.setItem(
-        "smartWateringLogs",
-        JSON.stringify(logs)
-    );
-
-
-    renderLogs();
-
+      schedule.executedDate = today;
+      saveSchedules();
+    }
+  });
 }
 
+/* ACTIVITY LOG */
+function addLog(message) {
+  logs.unshift({
+    id: Date.now(),
+    message,
+    time: new Date().toLocaleString(
+      currentLanguage === "id" ? "id-ID" : "en-US"
+    )
+  });
 
-/* =========================================================
-   RENDER LOGS
-   ========================================================= */
+  if (logs.length > 50) logs.pop();
+
+  localStorage.setItem(
+    "smartWateringLogs",
+    JSON.stringify(logs)
+  );
+
+  renderLogs();
+}
 
 function renderLogs() {
+  const container = document.getElementById("logList");
+  if (!container) return;
 
-    const container =
-        document.getElementById(
-            "pumpLog"
-        );
+  if (logs.length === 0) {
+    container.innerHTML = `<p>${t("noLog")}</p>`;
+    return;
+  }
 
-
-    if (!container) {
-        return;
-    }
-
-
-    if (logs.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="empty-log">
-                ${t("noLog")}
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        logs
-            .map(
-                log => {
-
-                    const isOn =
-                        log.action
-                            .toLowerCase()
-                            .includes(
-                                "on"
-                            );
-
-
-                    return `
-
-                    <div class="log-item">
-
-                        <div class="log-left">
-
-                            <div class="log-icon">
-
-                                ${
-                                    isOn
-                                        ? "💧"
-                                        : "⛔"
-                                }
-
-                            </div>
-
-                            <div>
-
-                                <div class="log-title">
-
-                                    ${log.action}
-
-                                </div>
-
-                                <div class="log-time">
-
-                                    ${log.time}
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="log-status">
-
-                            ${
-                                isOn
-                                    ? t("on")
-                                    : t("off")
-                            }
-
-                        </div>
-
-                    </div>
-
-                    `;
-
-                }
-            )
-            .join("");
-
+  container.innerHTML = logs.map(log => `
+    <div class="log-item">
+      <span>${log.message}</span>
+      <small>${log.time}</small>
+    </div>
+  `).join("");
 }
-
-
-/* =========================================================
-   CLEAR LOG
-   ========================================================= */
 
 function clearLogs() {
+  if (!confirm(t("confirmClear"))) return;
 
-    if (
-        !confirm(
-            t("confirmClear")
-        )
-    ) {
+  logs = [];
 
-        return;
+  localStorage.setItem(
+    "smartWateringLogs",
+    JSON.stringify(logs)
+  );
 
-    }
-
-
-    logs = [];
-
-
-    localStorage.setItem(
-        "smartWateringLogs",
-        JSON.stringify(logs)
-    );
-
-
-    renderLogs();
-
-
-    alert(
-        t("logsCleared")
-    );
-
+  renderLogs();
 }
 
+/* BUTTON EVENTS */
+function initializeEventListeners() {
+  const langID = document.getElementById("langID");
+  const langEN = document.getElementById("langEN");
+  const themeButton = document.getElementById("themeButton");
 
-/* =========================================================
-   INITIALIZATION
-   ========================================================= */
+  const onButton = document.getElementById("pumpOnButton");
+  const offButton = document.getElementById("pumpOffButton");
 
-function initialize() {
+  const scheduleForm = document.getElementById("scheduleForm");
+  const clearButton = document.getElementById("clearLogButton");
+  const saveThresholdButton = document.getElementById("saveThresholdButton");
 
-    /*
-       Terapkan tema terlebih dahulu
-    */
+  if (langID) {
+    langID.addEventListener("click", () => setLanguage("id"));
+  }
 
-    applyTheme();
+  if (langEN) {
+    langEN.addEventListener("click", () => setLanguage("en"));
+  }
 
+  if (themeButton) {
+    themeButton.addEventListener("click", toggleTheme);
+  }
 
-    /*
-       Isi histori awal grafik
-    */
+  if (onButton) {
+    onButton.addEventListener("click", () => pumpControl("on"));
+  }
 
-    for (
-        let i = 0;
-        i < 15;
-        i++
-    ) {
+  if (offButton) {
+    offButton.addEventListener("click", () => pumpControl("off"));
+  }
 
-        moistureHistory.push(
-            moisture +
-            Math.floor(
-                Math.random() * 9
-            ) -
-            4
-        );
+  if (scheduleForm) {
+    scheduleForm.addEventListener("submit", addSchedule);
+  }
 
-    }
+  if (clearButton) {
+    clearButton.addEventListener("click", clearLogs);
+  }
 
+  if (saveThresholdButton) {
+    saveThresholdButton.addEventListener("click", saveThresholds);
+  }
 
-    /*
-       Pastikan nilai histori
-       tetap 0 - 100
-    */
-
-    moistureHistory =
-        moistureHistory.map(
-            value =>
-                Math.max(
-                    0,
-                    Math.min(
-                        100,
-                        value
-                    )
-                )
-        );
-
-
-    /*
-       Tampilkan UI
-    */
-
-    applyTranslations();
-
-    updateMoistureUI();
-
-    updatePumpUI();
-
-    updateModeUI();
-
-    updateChart();
-
-    renderSchedules();
-
-    renderLogs();
-
+  document.querySelectorAll(".mode-button").forEach(button => {
+    button.addEventListener("click", () => {
+      setMode(button.dataset.mode);
+    });
+  });
 }
 
+/* INITIALIZATION */
+function initializeApp() {
+  applyTheme();
+  applyTranslations();
+  initializeEventListeners();
 
-/* =========================================================
-   SIMULASI SENSOR
-   ========================================================= */
+  if (moistureHistory.length === 0) {
+    moistureHistory = Array(10).fill(moisture);
+  }
 
-setInterval(
-    simulateMoisture,
-    3000
-);
+  updateMoistureUI();
+  updateTemperatureUI();
+  updatePumpUI();
+  updateFanUI();
+  updateChart();
+  updateModeUI();
+  renderSchedules();
+  renderLogs();
 
+  automaticControl();
+  automaticFanControl();
 
-/* =========================================================
-   START APPLICATION
-   ========================================================= */
+  setInterval(simulateMoisture, 5000);
+  setInterval(simulateTemperature, 5000);
+  setInterval(checkSchedules, 1000);
+}
 
-document.addEventListener(
-    "DOMContentLoaded",
-    initialize
-);
+document.addEventListener("DOMContentLoaded", initializeApp);
