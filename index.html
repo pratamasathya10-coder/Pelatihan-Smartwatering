@@ -707,69 +707,6 @@
 
         </section>
 
-        <!-- PENGATURAN AMBANG BATAS -->
-    <section class="card threshold-card">
-        <div class="section-heading">
-            <span class="section-label">PENGATURAN SENSOR</span>
-            <h2>Ambang Batas Otomatis</h2>
-            <p>
-                Atur batas kelembapan tanah untuk pompa
-                dan batas suhu untuk kipas.
-            </p>
-        </div>
-
-        <div class="threshold-grid">
-        <!-- BATAS KELEMBAPAN -->
-            <div class="threshold-item">
-                <label for="moistureThreshold">
-                    Kelembapan Tanah (%)
-                </label>
-
-            <input
-                type="number"
-                id="moistureThreshold"
-                min="0"
-                max="100"
-                value="40"
-            >
-
-            <small>
-                Pompa menyala jika kelembapan tanah
-                di bawah nilai ini.
-            </small>
-        </div>
-
-        <!-- BATAS SUHU -->
-        <div class="threshold-item">
-            <label for="temperatureThreshold">
-                Suhu Lingkungan (°C)
-            </label>
-
-            <input
-                type="number"
-                id="temperatureThreshold"
-                min="0"
-                max="80"
-                value="36"
-            >
-
-            <small>
-                Kipas menyala jika suhu melebihi nilai ini.
-            </small>
-        </div>
-    </div>
-
-    <button
-        type="button"
-        id="saveThresholdButton"
-        class="primary-button"
-    >
-        Simpan Pengaturan
-    </button>
-
-    <p id="thresholdMessage" class="threshold-message"></p>
-</section>
-
 
         <!-- PENJADWALAN POMPA -->
         <section class="card schedule-card">
@@ -1097,6 +1034,8 @@
 
 
 <script src="script.js"></script>
+
+
 
 </body>
 </html>
