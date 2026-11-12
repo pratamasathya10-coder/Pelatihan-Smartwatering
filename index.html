@@ -85,9 +85,7 @@
                 <div>
                     <strong>ESP32</strong>
 
-                    <small data-i18n="simulation">
-                        Simulasi
-                    </small>
+                    <small id="espHeaderStatus">Offline</small>
                 </div>
 
             </div>
@@ -156,8 +154,7 @@
                         </div>
 
                         <p data-i18n="sensorUpdate">
-                            Data sensor diperbarui secara berkala
-                            dalam mode simulasi.
+                            Data sensor diterima dari ESP32 melalui Firebase.
                         </p>
 
                     </div>
@@ -167,7 +164,7 @@
             </div>
 
 
-            <!-- SUHU DHT11 -->
+            <!-- SUHU DHT22 -->
             <div class="card temperature-card">
 
                 <div class="card-header">
@@ -175,7 +172,7 @@
                     <div>
 
                         <span class="card-label">
-                            SENSOR DHT11
+                            SENSOR DHT22
                         </span>
 
                         <h2>
@@ -204,7 +201,7 @@
                     </div>
 
                     <p>
-                        Data suhu dari sensor DHT11.
+                        Data suhu dari sensor DHT22.
                     </p>
 
                 </div>
@@ -857,12 +854,7 @@
 
                         <span>ESP32</span>
 
-                        <strong class="online">
-                            ●
-                            <span data-i18n="simulation">
-                                Simulasi
-                            </span>
-                        </strong>
+                        <strong id="systemEspStatus" class="offline">● Offline</strong>
 
                     </div>
 
@@ -882,19 +874,14 @@
                             Sensor Tanah
                         </span>
 
-                        <strong class="online">
-                            ●
-                            <span data-i18n="active">
-                                Aktif
-                            </span>
-                        </strong>
+                        <strong id="systemSoilStatus" class="offline">● Belum Terhubung</strong>
 
                     </div>
 
                 </div>
 
 
-                <!-- DHT11 -->
+                <!-- DHT22 -->
                 <div class="system-item">
 
                     <div class="system-icon">
@@ -904,7 +891,7 @@
                     <div>
 
                         <span>
-                            Sensor DHT11
+                            Sensor DHT22
                         </span>
 
                         <strong id="systemDhtStatus" class="offline">
@@ -927,12 +914,7 @@
 
                         <span>Wi-Fi</span>
 
-                        <strong class="online">
-                            ●
-                            <span data-i18n="simulation">
-                                Simulasi
-                            </span>
-                        </strong>
+                        <strong id="systemWifiStatus" class="offline">● Offline</strong>
 
                     </div>
 
@@ -1000,15 +982,11 @@
             <div>
 
                 <strong data-i18n="simulationMode">
-                    Mode Simulasi
+                    Data Real-Time
                 </strong>
 
                 <p data-i18n="simulationInfo">
-                    Sistem saat ini belum terhubung ke ESP32.
-                    Data sensor, pompa, jadwal dan log
-                    masih dijalankan melalui simulasi browser.
-                    Integrasi perangkat fisik akan dilakukan
-                    pada tahap berikutnya.
+                    Dashboard membaca data dari Firebase. Saat modul online, data sensor dan status pompa serta kipas berasal dari ESP32. Jadwal dan log aktivitas masih tersimpan di browser.
                 </p>
 
             </div>
@@ -1034,6 +1012,7 @@
 
 
 <script src="script.js"></script>
+<script type="module" src="firebase-app.js"></script>
 
 
 

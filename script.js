@@ -38,7 +38,7 @@ const translations = {
     soilGood: "Tanah Cukup Lembap",
     soilDry: "Tanah Kering",
     soilVeryDry: "Tanah Sangat Kering",
-    sensorUpdate: "Data sensor diperbarui secara berkala dalam mode simulasi.",
+    sensorUpdate: "Data sensor diterima dari ESP32 melalui Firebase.",
     actuator: "AKTUATOR",
     pumpStatus: "Status Pompa",
     pumpOff: "Pompa Mati",
@@ -81,8 +81,8 @@ const translations = {
     pump: "Pompa",
     off: "Mati",
     on: "Menyala",
-    simulationMode: "Mode Simulasi",
-    simulationInfo: "Sistem belum terhubung ke ESP32. Data sensor, pompa, kipas, jadwal, dan log masih dijalankan melalui simulasi browser. Integrasi perangkat fisik dilakukan pada tahap berikutnya.",
+    simulationMode: "Data Real-Time",
+    simulationInfo: "Dashboard membaca data dari Firebase. Saat modul online, data sensor dan status pompa serta kipas berasal dari ESP32. Jadwal dan log aktivitas masih tersimpan di browser.",
     scheduleAdded: "Jadwal berhasil ditambahkan.",
     scheduleDeleted: "Jadwal dihapus.",
     logsCleared: "Semua log pompa telah dihapus.",
@@ -112,7 +112,7 @@ const translations = {
     saveSettings: "Simpan Pengaturan",
     settingsSaved: "Pengaturan berhasil disimpan.",
     invalidThreshold: "Masukkan nilai ambang yang valid.",
-    dhtStatus: "Sensor DHT11",
+    dhtStatus: "Sensor DHT22",
     automaticFan: "Kipas dikendalikan otomatis berdasarkan suhu."
   },
 
@@ -126,7 +126,7 @@ const translations = {
     soilGood: "Soil Moisture is Good",
     soilDry: "Soil is Dry",
     soilVeryDry: "Soil is Very Dry",
-    sensorUpdate: "Sensor data is periodically updated in simulation mode.",
+    sensorUpdate: "Sensor data is received from the ESP32 through Firebase.",
     actuator: "ACTUATOR",
     pumpStatus: "Pump Status",
     pumpOff: "Pump OFF",
@@ -169,8 +169,8 @@ const translations = {
     pump: "Pump",
     off: "OFF",
     on: "ON",
-    simulationMode: "Simulation Mode",
-    simulationInfo: "The system is not connected to an ESP32. Sensor, pump, fan, schedule, and log data are running through browser simulation. Physical device integration will be done in the next stage.",
+    simulationMode: "Real-Time Data",
+    simulationInfo: "The dashboard reads data from Firebase. When a module is online, sensor data and pump and fan status come from the ESP32. Schedules and activity logs are still stored in the browser.",
     scheduleAdded: "Schedule successfully added.",
     scheduleDeleted: "Schedule deleted.",
     logsCleared: "All pump logs have been deleted.",
@@ -200,7 +200,7 @@ const translations = {
     saveSettings: "Save Settings",
     settingsSaved: "Settings successfully saved.",
     invalidThreshold: "Enter valid threshold values.",
-    dhtStatus: "DHT11 Sensor",
+    dhtStatus: "DHT22 Sensor",
     automaticFan: "The fan is automatically controlled based on temperature."
   }
 };
@@ -406,12 +406,6 @@ function updateTemperatureUI() {
     }</span>`;
   }
 
-  const dhtStatus = document.getElementById("systemDhtStatus");
-
-  if (dhtStatus) {
-    dhtStatus.className = "online";
-    dhtStatus.textContent = "● " + t("active");
-  }
 }
 
 /* AUTOMATIC ACTUATOR CONTROL */
@@ -807,92 +801,3 @@ function initializeApp() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeApp);
-
-// Menunggu sampai koneksi Firebase di index.html siap
-document.addEventListener("DOMContentLoaded", () => {
-    // Pastikan variabel global dari index.html sudah ada
-    if (!window.firebaseDB) {
-        console.warn("Firebase belum terinisialisasi.");
-        return;
-    }
-
-    const db = window.firebaseDB;
-
-    // Daftar modul yang ingin dipantau (Modul 01, 02, dan 03)
-    const moduli = ["MODUL_01", "MODUL_02", "MODUL_03"];
-
-    moduli.forEach((modulId, index) => {
-        const num = index + 1;
-        const sensorRef = window.dbRef(db, `modules/${modulId}/sensor`);
-
-        // Mendengarkan perubahan data sensor secara realtime
-        window.dbOnValue(sensorRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // Update ke elemen HTML (sesuaikan ID di HTML Anda jika berbeda)
-                updateElement(`m${num}-temp`, data.temp);
-                updateElement(`m${num}-hum`, data.hum);
-                updateElement(`m${num}-soil`, data.soil_pct);
-            }
-        });
-    });
-});
-
-// Fungsi bantu untuk memperbarui text HTML dengan aman
-function updateElement(id, value) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.innerText = value ?? '-';
-    }
-}
-
-// Fungsi global untuk tombol kontrol (Pompa ON/OFF)
-window.kontrolPerangkat = function(modulId, statusPompa) {
-    if (!window.firebaseDB) return;
-    
-    // Pastikan window.dbSet tersedia, jika sebelumnya di index.html pakai `set`, 
-    // Anda bisa tambahkan window.dbSet = set; di index.html atau gunakan langsung seperti di bawah:
-    const commandRef = window.dbRef(window.firebaseDB, `modules/${modulId}/command`);
-    
-    // Menggunakan fungsi set dari Firebase yang dipanggil lewat window
-    import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ set }) => {
-        set(commandRef, {
-            pump: statusPompa,
-            fan: "OFF",
-            id: Math.floor(Math.random() * 100)
-        }).then(() => {
-            console.log(`Perintah Pompa ${statusPompa} berhasil dikirim ke ${modulId}`);
-        }).catch((error) => {
-            console.error("Gagal mengirim perintah:", error);
-        });
-    });
-};
-// Fungsi untuk mengubah mode penyiraman (Auto / Manual)
-window.setMode = function(modeValue) {
-    if (!window.firebaseDB) return;
-
-    // Tentukan path ke database untuk pengaturan mode (sesuaikan struktur database Anda, misal: settings/mode)
-    const modeRef = window.dbRef(window.firebaseDB, 'settings/mode');
-
-    import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ set }) => {
-        set(modeRef, modeValue.toUpperCase()).then(() => {
-            console.log(`Mode berhasil diubah ke: ${modeValue}`);
-        }).catch((error) => {
-            console.error("Gagal mengubah mode:", error);
-        });
-    });
-};
-
-// Opsional: Mendengarkan perubahan mode dari database agar UI web selalu sinkron
-document.addEventListener("DOMContentLoaded", () => {
-    if (!window.firebaseDB) return;
-    
-    const modeRef = window.dbRef(window.firebaseDB, 'settings/mode');
-    window.dbOnValue(modeRef, (snapshot) => {
-        const currentMode = snapshot.val();
-        const modeTextEl = document.getElementById('modeText');
-        if (currentMode && modeTextEl) {
-            modeTextEl.innerText = currentMode;
-        }
-    });
-});
